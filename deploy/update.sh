@@ -1,14 +1,14 @@
 #!/bin/sh
-# Pull the latest code, test it, install it, and restart the service.
+# Deploy: pull the latest code, test it, install it, and restart the service.
 #
-# Run by ditta-ia-adapter-update.timer (as root), and before every service
-# start with --no-restart. New code is tested from a clean export of the
-# fetched commit before the checkout moves, so a broken push never reaches
-# the running service: the checkout and the installed copy stay on the last
-# good commit, and that commit is retried on the next run only after a new
-# push.
+#   sudo deploy/update.sh               # deploy whatever is new on the branch
+#   sudo -u ditta deploy/update.sh --no-restart   # first install, no service yet
 #
-#   update.sh [--no-restart]
+# Nothing runs this automatically; deploying is always this one command.
+# New code is tested from a clean export of the fetched commit before the
+# checkout moves, so a broken push never reaches the running service: the
+# checkout and the installed copy stay on the last good commit, and running
+# again skips that commit until a new one is pushed.
 #
 # Settings, all optional, read from the environment:
 #   APP_DIR       the git checkout (default: this script's parent directory)

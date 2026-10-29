@@ -1,9 +1,0 @@
-[Unit]
-Description=Update and restart ditta-ia-adapter when new commits land
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=oneshot
-# Root only to restart the service; git, pip and tests drop to the app user.
-ExecStart=/srv/ditta-internet-archive-adapter/deploy/update.sh

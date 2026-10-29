@@ -107,41 +107,33 @@ ditta-ia-adapter serve --config config.toml
 
 The server listens on `127.0.0.1:8080` by default.
 
-### Running as a service, with automatic updates
+### Running as a service
 
-`deploy/` holds a systemd setup that keeps the adapter running and on the latest commit of `main`:
+`deploy/ditta-ia-adapter.service` runs the adapter as user `ditta` from `/srv/ditta-internet-archive-adapter` and restarts it if it crashes. It never updates itself: deploying is one command, run when you choose.
 
-| File | What it does |
-| --- | --- |
-| `ditta-ia-adapter.service` | Runs the adapter as user `ditta` from `/srv/ditta-internet-archive-adapter`, restarts it if it crashes, and pulls any new commit before each start. |
-| `ditta-ia-adapter-update.timer` | Runs the updater every 15 minutes (first run 5 minutes after boot). |
-| `ditta-ia-adapter-update.service` | The updater the timer starts. |
-| `update.sh` | Fetches `main` and, if it moved, tests the new commit, installs it and restarts the service. |
+```sh
+sudo /srv/ditta-internet-archive-adapter/deploy/update.sh
+```
 
-The updater tests every new commit from a clean export before the checkout moves. If the tests fail, nothing changes: the service keeps running the last good commit, the failure is logged, and that commit is not retried. The next push that passes is picked up as usual. Git, pip and the tests run as the `ditta` user; root is used only to restart the service.
+`update.sh` fetches `main`, and if it moved, tests the new commit from a clean export, installs it and restarts the service. If the tests fail, nothing changes: the service keeps running the last good commit, the failure is printed, and that commit is skipped on later runs until a newer one is pushed. Git, pip and the tests run as the `ditta` user; root is used only for the restart.
 
-One-time setup, as root (the paths are the units' defaults; edit both if you change them):
+One-time setup, as root (the paths are the unit's defaults; edit it if you change them):
 
 ```sh
 useradd --system --home-dir /srv/ditta-internet-archive-adapter --shell /usr/sbin/nologin ditta
-git clone <this repository's URL> /srv/ditta-internet-archive-adapter     # a read-only deploy key is enough
+git clone <this repository's URL> /srv/ditta-internet-archive-adapter
 chown -R ditta:ditta /srv/ditta-internet-archive-adapter
 cd /srv/ditta-internet-archive-adapter
 runuser -u ditta -- python3 -m venv .venv
 runuser -u ditta -- cp config.example.toml config.toml      # then edit it
 runuser -u ditta -- deploy/update.sh --no-restart           # installs and tests
 runuser -u ditta -- .venv/bin/ditta-ia-adapter keygen node.key
-cp deploy/*.service deploy/*.timer /etc/systemd/system/
+cp deploy/ditta-ia-adapter.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable --now ditta-ia-adapter.service ditta-ia-adapter-update.timer
+systemctl enable --now ditta-ia-adapter.service
 ```
 
-Put Internet Archive keys, if you have them, in `/etc/ditta-ia-adapter.env` (mode 0600) as `IA_ACCESS_KEY_ID=...` and `IA_SECRET_ACCESS_KEY=...`. Watch it with `journalctl -u ditta-ia-adapter -u ditta-ia-adapter-update`, and run an update by hand with `systemctl start ditta-ia-adapter-update`. If `node.endpoint` has a path, such as `https://example.com/ditta`, requests are accepted under that prefix as well as at the root, so the proxy may forward with or without it.
-
-- **Configuration** lives in `config.toml`, which `.gitignore` excludes; `config.example.toml` documents every setting.
-- **Credentials.** Internet Archive keys are optional but recommended, since the Archive asks automated clients to authenticate when they can. They come only from the environment, under the `internetarchive` library's own names: `IA_ACCESS_KEY_ID` and `IA_SECRET_ACCESS_KEY` (the older `IA_ACCESS_KEY` and `IA_SECRET_KEY` still work). The library may also read its own `ia.ini` config file if one exists on the machine.
-- **Node key.** The node key is a file of 64 hex characters, created with mode 0600. Use a key generated for DITTA alone.
-- **State.** `terms.sqlite` and `peers.sqlite` are created next to the config file.
+Put Internet Archive keys, if you have them, in `/etc/ditta-ia-adapter.env` (mode 0600) as `IA_ACCESS_KEY_ID=...` and `IA_SECRET_ACCESS_KEY=...`. Watch the service with `journalctl -u ditta-ia-adapter`.
 
 ## Development
 

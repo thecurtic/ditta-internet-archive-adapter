@@ -10,8 +10,6 @@ Group=ditta
 WorkingDirectory=/srv/ditta-internet-archive-adapter
 # Internet Archive keys, if any: IA_ACCESS_KEY_ID=... and IA_SECRET_ACCESS_KEY=...
 EnvironmentFile=-/etc/ditta-ia-adapter.env
-# Pick up any new commit on every start. "-": start anyway if offline.
-ExecStartPre=-/srv/ditta-internet-archive-adapter/deploy/update.sh --no-restart
 ExecStart=/srv/ditta-internet-archive-adapter/.venv/bin/ditta-ia-adapter serve --config /srv/ditta-internet-archive-adapter/config.toml
 Restart=on-failure
 RestartSec=10

@@ -7,12 +7,12 @@ After=network-online.target
 Type=simple
 User=ditta
 Group=ditta
-WorkingDirectory=/opt/ditta-ia-adapter
+WorkingDirectory=/srv/ditta-internet-archive-adapter
 # Internet Archive keys, if any: IA_ACCESS_KEY=... and IA_SECRET_KEY=...
 EnvironmentFile=-/etc/ditta-ia-adapter.env
 # Pick up any new commit on every start. "-": start anyway if offline.
-ExecStartPre=-/opt/ditta-ia-adapter/deploy/update.sh --no-restart
-ExecStart=/opt/ditta-ia-adapter/.venv/bin/ditta-ia-adapter serve --config /opt/ditta-ia-adapter/config.toml
+ExecStartPre=-/srv/ditta-internet-archive-adapter/deploy/update.sh --no-restart
+ExecStart=/srv/ditta-internet-archive-adapter/.venv/bin/ditta-ia-adapter serve --config /srv/ditta-internet-archive-adapter/config.toml
 Restart=on-failure
 RestartSec=10
 # The home directory is hidden below, so pip gets no cache.
@@ -22,7 +22,7 @@ NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
-ReadWritePaths=/opt/ditta-ia-adapter
+ReadWritePaths=/srv/ditta-internet-archive-adapter
 
 [Install]
 WantedBy=multi-user.target

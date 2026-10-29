@@ -110,7 +110,7 @@ The server listens on `127.0.0.1:8080` by default.
 
 | File | What it does |
 | --- | --- |
-| `ditta-ia-adapter.service` | Runs the adapter as user `ditta` from `/opt/ditta-ia-adapter`, restarts it if it crashes, and pulls any new commit before each start. |
+| `ditta-ia-adapter.service` | Runs the adapter as user `ditta` from `/srv/ditta-internet-archive-adapter`, restarts it if it crashes, and pulls any new commit before each start. |
 | `ditta-ia-adapter-update.timer` | Runs the updater every 15 minutes (first run 5 minutes after boot). |
 | `ditta-ia-adapter-update.service` | The updater the timer starts. |
 | `update.sh` | Fetches `main` and, if it moved, tests the new commit, installs it and restarts the service. |
@@ -120,10 +120,10 @@ The updater tests every new commit from a clean export before the checkout moves
 One-time setup, as root (the paths are the units' defaults; edit both if you change them):
 
 ```sh
-useradd --system --home-dir /opt/ditta-ia-adapter --shell /usr/sbin/nologin ditta
-git clone <this repository's URL> /opt/ditta-ia-adapter     # a read-only deploy key is enough
-chown -R ditta:ditta /opt/ditta-ia-adapter
-cd /opt/ditta-ia-adapter
+useradd --system --home-dir /srv/ditta-internet-archive-adapter --shell /usr/sbin/nologin ditta
+git clone <this repository's URL> /srv/ditta-internet-archive-adapter     # a read-only deploy key is enough
+chown -R ditta:ditta /srv/ditta-internet-archive-adapter
+cd /srv/ditta-internet-archive-adapter
 runuser -u ditta -- python3 -m venv .venv
 runuser -u ditta -- cp config.example.toml config.toml      # then edit it
 runuser -u ditta -- deploy/update.sh --no-restart           # installs and tests

@@ -40,7 +40,7 @@
   <rect class="accent" x="24" y="200" width="460" height="72" rx="8"/>
   <text class="ink" x="254" y="224" text-anchor="middle" font-weight="600">Adapter interface</text>
   <text class="ink" x="254" y="240" text-anchor="middle" font-size="11.5">search(query, n) → ordered results</text>
-  <text class="ink" x="254" y="256" text-anchor="middle" font-size="11.5">count(term) → numFound</text>
+  <text class="ink" x="254" y="256" text-anchor="middle" font-size="11.5">count(term) → count, newest · total_documents()</text>
 
   <rect class="box" x="24" y="296" width="460" height="72" rx="8"/>
   <text class="ink" x="254" y="320" text-anchor="middle" font-weight="600">Internet Archive client</text>

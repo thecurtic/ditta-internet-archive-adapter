@@ -37,12 +37,12 @@ These decisions are settled. Changing any of them needs the maintainer's explici
 Three layers, each in its own module, talking only through the interface below it.
 
 1. **DITTA front:** HTTP endpoints, message validation, canonical serialization, signing, and the announcement. Nothing in this layer knows about the Internet Archive.
-2. **Adapter interface:** two calls only, `search(query, n)` returning ordered results and `count(term)` returning a document count.
+2. **Adapter interface:** three calls only: `search(query, n)` returning ordered results, `count(term)` returning the term's document count and newest document date (statistics format 0), and `total_documents()` returning the corpus size as the source itself publishes it (for the Archive, `numFound` for `*:*`). If a source publishes no size, estimate it, or count the unique documents the adapter has served.
 3. **Internet Archive client:** query translation, rate limiting, backoff, caching, and all requests to the Archive.
 
-Plus the term store (SQLite) and its background count worker beside the client.
+Plus the term store (SQLite) and its background count worker beside the client, and the announcement store the front uses for discovery.
 
-Use the `ditta-wire-py` library for message parsing, validation, canonical serialization, and signing. Do not reimplement any part of the wire format. If the library lacks something, stop and say so rather than writing a local copy.
+The wire format (strict parsing, validation, canonical serialization, signing) is implemented in this repo, in its own module under the front. `ditta-wire-py` is a reference to read, not a dependency: do not import or copy it. Signatures use `coincurve` (native libsecp256k1). The spec's test vectors are the conformance tests for this module, and every vector must pass.
 
 ### Query handling
 
@@ -58,7 +58,9 @@ Use the `ditta-wire-py` library for message parsing, validation, canonical seria
 | Document identifier | `identifier` |
 | URL | `https://archive.org/details/{identifier}`, always built, never taken from metadata |
 | Title | `title`, first value if an array, identifier if missing |
-| Snippet | `description`, first value if an array, HTML stripped, whitespace collapsed, truncated |
+| Snippet | `description`, first value if an array, HTML stripped, whitespace collapsed, truncated; if there is none, a line from creator, year, media type and subjects |
+
+Every media type is searched. A result is returned when it has an identifier and some snippet text; otherwise it is skipped.
 
 Treat every string from the Archive as untrusted display content: strip markup, never evaluate it.
 
@@ -70,6 +72,17 @@ The Archive's automated access rules (<https://archive.org/developers/bots.html>
 - Every request carries a User-Agent with the tool name, version, and the operator's contact URL from configuration. No AI model names.
 - Honour `429` and `Retry-After`; back off exponentially on errors; cap concurrent requests; cache identical searches for a short window.
 - While backing off, answer new queries with a DITTA error (`rate_limited`). Never return an empty result set because the adapter was throttled.
+
+### Signing
+
+The adapter signs every message it sends: announcements, corpus statistics responses, result sets, peer list responses, and errors.
+
+### Discovery
+
+- The adapter keeps every valid announcement it receives (one per pubkey, greatest timestamp wins) and relays each new one unchanged to the other nodes it knows.
+- It announces itself to every node it has seen, starting from a seed list in configuration, and re-announces periodically.
+- `/peers` answers from the announcement store.
+- Never connect to loopback, private, or link-local addresses unless configuration allows it, and bound the outbound connection rate.
 
 ### Pricing
 

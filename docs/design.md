@@ -14,7 +14,7 @@ The adapter has three layers, and only the bottom one knows anything about the I
 
 ![Adapter architecture: three layers, with every Internet Archive rule in the bottom layer](architecture.svg)
 
-The front is the same for every DITTA indexer. Another source, such as a Wayback adapter, implements the same two calls in the middle layer and reuses the front unchanged.
+The front is the same for every DITTA indexer. Another source, such as a Wayback adapter, implements the same three calls in the middle layer and reuses the front unchanged.
 
 ## Query interpretation
 
@@ -37,11 +37,11 @@ Each query is one search request that asks only for the fields below, so no per-
 | Document identifier | `identifier` | As is; stable and unique within the Archive |
 | URL | `https://archive.org/details/{identifier}` | Built, never taken from metadata |
 | Title | `title` | First value if an array; identifier if missing |
-| Snippet | `description` | First value if an array, HTML tags stripped, whitespace collapsed, truncated |
+| Snippet | `description` | First value if an array, HTML tags stripped, whitespace collapsed, cut to 300 characters; without one, a line from creator, year, media type and subjects |
 
-Results keep the Archive's order, best first, since a DITTA result set carries no score. The search must use the paged form with `page` and `rows`: the library's default returns every match sorted by identifier, which breaks the best-first rule. Relevance ordering of the paged form should be confirmed in testing.
+Results keep the Archive's order, best first, since a DITTA result set carries no score. The search must use the paged form with `page` and `rows`: the library's default returns every match sorted by identifier, which breaks the best-first rule. A live run on 2026-10-29 confirmed that the paged form returns relevance order, not identifier order.
 
-The result count never exceeds the query's max result count.
+The result count never exceeds the query's max result count. Every media type is searched; an item is returned when it has an identifier and some text for a snippet.
 
 ## Internet Archive access rules
 
@@ -57,11 +57,11 @@ While the client is backing off, the adapter returns an error to new queries ins
 
 ## Corpus statistics
 
-Term counts are built lazily from real demand, so the reported terms reflect what people search rather than the Archive's metadata boilerplate. A count is the `numFound` of a search for that term with zero rows requested.
+Term counts are built lazily from real demand, so the reported terms reflect what people search rather than the Archive's metadata boilerplate. A term's statistics come from one search for that term with one row, newest first: `numFound` is its document count and the top item's date is its freshness marker (`newest` in statistics format 0).
 
 - **Seeding:** the term table starts from the operator's own targeted searches, which breaks the cold start where no stats means no routed queries.
 - **Backfill:** each served query adds its terms, minus stopwords, to a queue. A background worker counts queued terms one at a time with a few seconds between requests.
-- **Staleness:** each term stores `count`, `counted_at` and `last_requested`. The oldest counts are refreshed first, and terms not requested for a long period age out.
+- **Staleness:** each term stores `count`, `newest`, `counted_at` and `last_requested`. The oldest counts are refreshed first, and terms not requested for a long period age out.
 - **Snapshot time:** the corpus-updated timestamp is the time of the last completed refresh pass.
 
 The queue stores bare terms only. It never records whole query strings, requester pubkeys or per-query timestamps, so it cannot reconstruct who searched for what. Per-broker data, if ever needed for rate limiting, lives in a separate short-lived store that is never joined to the term table.
@@ -70,7 +70,9 @@ The queue stores bare terms only. It never records whole query strings, requeste
 
 The adapter is free: it announces a single `per_query` pricing option at a price of 0 and never sends a 402 challenge. Free access avoids charging for the Archive's data and keeps the adapter a clean demonstration.
 
-The announcement names the indexer role with a corpus description pointing to the Internet Archive, and serves corpus statistics from the term table.
+The announcement names the indexer role with a corpus description pointing to the Internet Archive, and serves corpus statistics from the term table. Its total document count is the size the Archive publishes through its search API (`numFound` for `*:*`, 128,351,232 on 2026-10-29), refreshed daily. Every message the adapter sends is signed, result sets and errors included.
+
+For discovery, the adapter keeps the newest valid announcement per pubkey, relays each new one unchanged to the other nodes it knows, and announces itself to every node it has seen, starting from a seed list in configuration. It never connects to loopback, private or link-local addresses unless configured to, and bounds its outbound connection rate.
 
 ## Repository and README
 
@@ -96,9 +98,9 @@ Three Internet Archive services are deliberately left out of v1:
 
 Open items:
 
-- [ ] Whether to filter by `mediatype`, for example to texts only, which gives better snippets.
-- [ ] Snippet length limit.
-- [ ] Whether result sets are signed.
-- [ ] Cache window and the cap on concurrent requests.
-- [ ] Confirm that the paged search returns results in relevance order.
+- [x] Whether to filter by `mediatype`. Decided: no; anything with a URL and a snippet is returned.
+- [x] Snippet length limit. Decided: 300 characters.
+- [x] Whether result sets are signed. Decided: every message is signed.
+- [x] Cache window and the cap on concurrent requests. Decided: 10 minutes and 2 requests.
+- [x] Confirm that the paged search returns results in relevance order. Confirmed 2026-10-29.
 - [x] Choose the license: MIT.

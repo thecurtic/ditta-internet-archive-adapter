@@ -1,0 +1,19 @@
+{
+ "responseHeader": {
+  "status": 0,
+  "QTime": 64,
+  "params": {
+   "query": "(text:zzqxjvw OR text:zzqxjvw OR text__reviews:zzqxjvw) AND (text:lighthouse OR text:lighthouse OR text__reviews:lighthouse)",
+   "qin": "zzqxjvw AND lighthouse",
+   "fields": "identifier,title,description,creator,date,mediatype,subject",
+   "wt": "json",
+   "rows": 8,
+   "start": 0
+  }
+ },
+ "response": {
+  "numFound": 0,
+  "start": 0,
+  "docs": []
+ }
+}

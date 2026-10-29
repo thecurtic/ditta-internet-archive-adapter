@@ -1,0 +1,48 @@
+# Copy to config.toml (which .gitignore excludes) and edit.
+# Internet Archive keys, if you have them, go in the environment:
+#   IA_ACCESS_KEY=...  IA_SECRET_KEY=...
+
+[node]
+# The public base URL brokers reach, behind your TLS reverse proxy.
+endpoint = "https://example.com/ditta"
+# Created with: ditta-ia-adapter keygen node.key
+key_file = "node.key"
+
+[server]
+host = "127.0.0.1"
+port = 8080
+
+[archive]
+# Sent in the User-Agent so the Archive can see who runs this and reach them.
+contact_url = "https://example.com"
+max_concurrent = 2
+cache_seconds = 600
+timeout_seconds = 20
+
+[search]
+max_results = 50
+max_query_terms = 32
+snippet_chars = 300
+
+[corpus]
+db_path = "terms.sqlite"
+languages = ["en"]
+# Your own targeted searches, so the first statistics are not empty.
+seed_terms = []
+count_interval_seconds = 5
+refresh_after_days = 7
+expire_after_days = 90
+max_corpus_terms = 5000
+
+[discovery]
+db_path = "peers.sqlite"
+# Base URLs of nodes to announce to at startup.
+seed_endpoints = []
+reannounce_hours = 6
+min_post_interval_seconds = 1
+# Only for local testing: allows http and private addresses.
+allow_private_addresses = false
+
+[logging]
+# Logs each query string at debug level. Keep this off in production.
+log_queries = false

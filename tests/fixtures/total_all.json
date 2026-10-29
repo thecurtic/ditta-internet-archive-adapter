@@ -1,0 +1,19 @@
+{
+ "responseHeader": {
+  "status": 0,
+  "QTime": 476,
+  "params": {
+   "query": "*:*",
+   "qin": "*:*",
+   "fields": "identifier",
+   "wt": "json",
+   "rows": 0,
+   "start": 0
+  }
+ },
+ "response": {
+  "numFound": 128351232,
+  "start": 0,
+  "docs": []
+ }
+}

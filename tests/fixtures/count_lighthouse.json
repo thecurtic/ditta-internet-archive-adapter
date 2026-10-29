@@ -1,0 +1,25 @@
+{
+ "responseHeader": {
+  "status": 0,
+  "QTime": 229,
+  "params": {
+   "query": "text:lighthouse OR text:lighthouse OR text__reviews:lighthouse",
+   "qin": "lighthouse",
+   "fields": "identifier,publicdate",
+   "wt": "json",
+   "sort": "publicdate desc",
+   "rows": 1,
+   "start": 0
+  }
+ },
+ "response": {
+  "numFound": 15772,
+  "start": 0,
+  "docs": [
+   {
+    "identifier": "nps-video-caha-rms-titanic-and-the-hatteras-weather-bureau-station",
+    "publicdate": "2026-10-29T00:10:42Z"
+   }
+  ]
+ }
+}

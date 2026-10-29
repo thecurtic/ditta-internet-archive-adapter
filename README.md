@@ -55,7 +55,7 @@ Only texts are searched by default: books, scanned pages and other documents (`m
 The Archive's [automated access guidance](https://archive.org/developers/bots.html) is treated as hard requirements, all enforced in one module (`src/ditta_ia_adapter/ia/`):
 
 - **One library.** Every request goes through the official [`internetarchive`](https://pypi.org/project/internetarchive/) library's session, which also authenticates when the operator has Archive keys (`IA_ACCESS_KEY_ID` and `IA_SECRET_ACCESS_KEY`).
-- **User-Agent.** Every request names the tool, its version and the operator's contact URL, for example `ditta-ia-adapter/0.2.0 (+https://example.com)`, after the library's own User-Agent. The running adapter is not an AI agent, so it names no model. When an AI coding agent runs the live tests, it names its model too, as the Archive requires (see Development).
+- **User-Agent.** Every request names the tool, its version and the operator's contact URL, for example `ditta-ia-adapter/0.3.0 (+https://example.com)`, after the library's own User-Agent. The running adapter is not an AI agent, so it names no model. When an AI coding agent runs the live tests, it names its model too, as the Archive requires (see Development).
 - **Rate limits.** A `429` or a `5xx` starts a backoff, honouring `Retry-After` when present and otherwise doubling from 2 seconds up to 10 minutes.
 - **Throttled is not empty.** While backing off, the adapter sends nothing to the Archive and answers queries with `rate_limited` (HTTP 503 with `Retry-After`). It never answers with an empty result set because it was throttled, since a broker would read that as "no matches".
 - **Concurrency and spacing.** At most 2 requests to the Archive at once, and each starts at least 1 second after the previous one, across live queries and the background counter.
@@ -115,7 +115,7 @@ The server listens on `127.0.0.1:8080` by default.
 sudo /srv/ditta-internet-archive-adapter/deploy/update.sh
 ```
 
-`update.sh` fetches `main`, and if it moved, tests the new commit from a clean export, installs it and restarts the service. If the tests fail, nothing changes: the service keeps running the last good commit, the failure is printed, and that commit is skipped on later runs until a newer one is pushed. Git, pip and the tests run as the `ditta` user; root is used only for the restart.
+`update.sh` fetches `main`, and if it differs from the commit last installed (recorded in `.venv/installed-commit`, so a manual `git pull` doesn't fool it), tests the new commit from a clean export, installs it and restarts the service. If the tests fail, nothing changes: the service keeps running the last good commit, the failure is printed, and that commit is skipped on later runs until a newer one is pushed. Git, pip and the tests run as the `ditta` user; root is used only for the restart.
 
 One-time setup, as root (the paths are the unit's defaults; edit it if you change them):
 

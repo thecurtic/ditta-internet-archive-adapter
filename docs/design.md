@@ -49,7 +49,7 @@ The result count never exceeds the query's max result count. Only texts are sear
 
 Every request goes through the official `internetarchive` Python library, which is the Archive's supported path to search and handles the User-Agent suffix and credentials. The Archive's [automated access guidance](https://archive.org/developers/bots.html) sets the rules below.
 
-- **User-Agent:** a tool name and version on every request, such as `ditta-ia-adapter/0.2.0 (+https://example.com)`. The URL is the operator's contact page, set in configuration, so the Archive can see who runs it and how to reach them. No model name, since the adapter is not an AI agent.
+- **User-Agent:** a tool name and version on every request, such as `ditta-ia-adapter/0.3.0 (+https://example.com)`. The URL is the operator's contact page, set in configuration, so the Archive can see who runs it and how to reach them. No model name, since the adapter is not an AI agent.
 - **Rate limits:** honour `429` responses and `Retry-After`, with exponential backoff on errors.
 - **Caching:** identical searches within a short window are served from cache instead of re-sent.
 - **Concurrency:** a small fixed cap on simultaneous requests (2), and a minimum gap between request starts (1 second).

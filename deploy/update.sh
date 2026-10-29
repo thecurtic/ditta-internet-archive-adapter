@@ -10,6 +10,10 @@
 # checkout and the installed copy stay on the last good commit, and running
 # again skips that commit until a new one is pushed.
 #
+# What counts as "new" is the commit last installed into the venv, recorded
+# in .venv/installed-commit, not the checkout's HEAD: a manual `git pull`
+# moves HEAD without installing, and must not make this script a no-op.
+#
 # Settings, all optional, read from the environment:
 #   APP_DIR       the git checkout (default: this script's parent directory)
 #   APP_USER      user that owns the checkout and runs the service
@@ -25,6 +29,7 @@ BRANCH=${BRANCH:-main}
 SERVICE=${SERVICE:-ditta-ia-adapter.service}
 VENV="$APP_DIR/.venv"
 FAILED_MARK="$APP_DIR/.update-failed"
+INSTALLED_MARK="$VENV/installed-commit"
 RESTART=yes
 [ "${1:-}" = "--no-restart" ] && RESTART=no
 
@@ -43,8 +48,10 @@ cd "$APP_DIR"
 as_app git fetch --quiet origin "$BRANCH"
 current=$(as_app git rev-parse HEAD)
 latest=$(as_app git rev-parse "origin/$BRANCH")
+installed=$(cat "$INSTALLED_MARK" 2>/dev/null || echo none)
 
-if [ "$current" = "$latest" ] && [ -x "$VENV/bin/ditta-ia-adapter" ]; then
+if [ "$installed" = "$latest" ] && [ -x "$VENV/bin/ditta-ia-adapter" ]; then
+    log "already running $latest"
     exit 0
 fi
 if [ -f "$FAILED_MARK" ] && [ "$(cat "$FAILED_MARK")" = "$latest" ]; then
@@ -69,8 +76,9 @@ fi
 
 as_app git merge --quiet --ff-only "$latest"
 as_app "$VENV/bin/python" -m pip install --quiet "$APP_DIR"
+echo "$latest" | as_app tee "$INSTALLED_MARK" >/dev/null
 rm -f "$FAILED_MARK"
-if [ "$current" = "$latest" ]; then log "installed $latest"; else log "updated $current -> $latest"; fi
+log "installed $latest (previously $installed)"
 
 if [ "$RESTART" = yes ]; then
     systemctl restart "$SERVICE"

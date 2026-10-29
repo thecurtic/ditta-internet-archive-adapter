@@ -29,6 +29,9 @@ snippet_chars = 300
 filter_languages = true
 # Also keep items with no language field (about a third of the Archive).
 include_unlabeled = true
+# Archive media types to search. "texts" covers books, scanned pages and
+# documents; add "movies", "audio", "image" and so on, or use [] for all.
+mediatypes = ["texts"]
 
 [corpus]
 db_path = "terms.sqlite"

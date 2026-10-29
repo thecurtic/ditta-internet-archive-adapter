@@ -48,7 +48,7 @@ Results keep the Archive's relevance order (confirmed against the live Archive).
 | Title | `title`, first value if a list, the identifier if missing |
 | Snippet | `description`, first value if a list, HTML stripped, whitespace collapsed, cut to 300 characters; without one, a line such as `Diedreck, Jay · 2017 · texts` from creator, year, media type and subjects |
 
-Every media type is searched. An item is returned when it has an identifier (so a URL) and some text for a snippet; the rare item with neither a description nor any of those fields is skipped. Every string from the Archive is treated as untrusted display text: markup is stripped, never evaluated.
+Only texts are searched by default: books, scanned pages and other documents (`mediatype:texts`), so video and podcasts stay out of the results. The `mediatypes` setting under `[search]` changes this, and `[]` searches every media type. The same filter applies to term counts and the corpus size. An item is returned when it has an identifier (so a URL) and some text for a snippet; the rare item with neither a description nor any of those fields is skipped. Every string from the Archive is treated as untrusted display text: markup is stripped, never evaluated.
 
 ## How it treats the Archive
 
@@ -89,7 +89,7 @@ The adapter announces the `indexer` role with a single `per_query` pricing optio
 
 Its corpus summary reports:
 
-- the Archive's item count as its search API publishes it, under the same language filter (`numFound`; about 113 million of 128 million for English or unlabelled), refreshed daily;
+- the Archive's item count as its search API publishes it, under the same media-type and language filters (`numFound`; about 43 million English or unlabelled texts of 128 million items), refreshed daily;
 - the number of counted terms in its store, a lower bound rather than the Archive's real vocabulary, which it cannot know;
 - the snapshot time, the configured languages (default `["en"]`), and statistics format `0`.
 

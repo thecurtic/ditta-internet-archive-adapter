@@ -68,8 +68,23 @@ def language_filter(tags: list[str], include_unlabeled: bool) -> str | None:
     return labelled
 
 
-def restrict(expression: str, clause: str | None) -> str:
-    return f"({expression}) AND {clause}" if clause else expression
+def mediatype_filter(mediatypes: list[str]) -> str | None:
+    """A clause limiting results to these media types, or None for all.
+
+    `texts` covers books, scanned pages and other documents; leaving out
+    `movies` and `audio` keeps video and podcasts out of the results.
+    """
+    if not mediatypes:
+        return None
+    return "mediatype:(" + " OR ".join(escape_term(m) for m in mediatypes) + ")"
+
+
+def restrict(expression: str, *clauses: str | None) -> str:
+    """The search expression, ANDed with every filter clause that is set."""
+    clauses = tuple(c for c in clauses if c)
+    if not clauses:
+        return expression
+    return " AND ".join((f"({expression})",) + clauses)
 
 
 def all_terms(terms: list[str]) -> str:

@@ -61,7 +61,7 @@ The wire format (strict parsing, validation, canonical serialization, signing) i
 | Title | `title`, first value if an array, identifier if missing |
 | Snippet | `description`, first value if an array, HTML stripped, whitespace collapsed, truncated; if there is none, a line from creator, year, media type and subjects |
 
-Every media type is searched. A result is returned when it has an identifier and some snippet text; otherwise it is skipped.
+Searches, counts and the corpus size are limited to the configured media types, `texts` by default (books, scanned pages, documents), so video and audio stay out. A result is returned when it has an identifier and some snippet text; otherwise it is skipped.
 
 Treat every string from the Archive as untrusted display content: strip markup, never evaluate it.
 

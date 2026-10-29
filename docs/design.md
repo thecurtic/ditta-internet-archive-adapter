@@ -43,7 +43,7 @@ Each query is one search request that asks only for the fields below, so no per-
 
 Results keep the Archive's order, best first, since a DITTA result set carries no score. The search must use the paged form with `page` and `rows`: the library's default returns every match sorted by identifier, which breaks the best-first rule. A live run on 2026-10-29 confirmed that the paged form returns relevance order, not identifier order.
 
-The result count never exceeds the query's max result count. Every media type is searched; an item is returned when it has an identifier and some text for a snippet.
+The result count never exceeds the query's max result count. Only texts are searched by default (books, scanned pages and documents; configurable), which keeps video and podcasts out; an item is returned when it has an identifier and some text for a snippet.
 
 ## Internet Archive access rules
 
@@ -73,7 +73,7 @@ The queue stores bare terms only. It never records whole query strings, requeste
 
 The adapter is free: it announces a single `per_query` pricing option at a price of 0 and never sends a 402 challenge. Free access avoids charging for the Archive's data and keeps the adapter a clean demonstration.
 
-The announcement names the indexer role with a corpus description pointing to the Internet Archive, and serves corpus statistics from the term table. Its total document count is the size the Archive publishes through its search API (`numFound` for `*:*` under the language filter: 112,761,507 of 128,351,232 on 2026-10-29), refreshed daily. Every message the adapter sends is signed, result sets and errors included.
+The announcement names the indexer role with a corpus description pointing to the Internet Archive, and serves corpus statistics from the term table. Its total document count is the size the Archive publishes through its search API (`numFound` for `*:*` under the media-type and language filters: 42,932,422 English or unlabelled texts of 128,351,232 items on 2026-10-29), refreshed daily. Every message the adapter sends is signed, result sets and errors included.
 
 For discovery, the adapter keeps the newest valid announcement per pubkey, relays each new one unchanged to the other nodes it knows, and announces itself to every node it has seen, starting from a seed list in configuration. It never connects to loopback, private or link-local addresses unless configured to, and bounds its outbound connection rate.
 
@@ -101,7 +101,7 @@ Three Internet Archive services are deliberately left out of v1:
 
 Open items:
 
-- [x] Whether to filter by `mediatype`. Decided: no; anything with a URL and a snippet is returned.
+- [x] Whether to filter by `mediatype`. Decided: texts only by default, configurable. First decided as no filter; changed on 2026-10-29 because video and podcasts crowded the results.
 - [x] Snippet length limit. Decided: 300 characters.
 - [x] Whether result sets are signed. Decided: every message is signed.
 - [x] Cache window and the cap on concurrent requests. Decided: 10 minutes and 2 requests.

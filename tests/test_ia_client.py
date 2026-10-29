@@ -395,6 +395,31 @@ def test_language_filter_applies_to_counts_and_corpus_size() -> None:
     assert all("language:(eng" in call["params"]["q"] for call in session.calls)
 
 
+def test_mediatype_filter_limits_searches_counts_and_corpus_size() -> None:
+    source, session = make_source(
+        FakeResponse(body=fixture("search_two_terms.json")),
+        FakeResponse(body=fixture("count_lighthouse.json")),
+        FakeResponse(body=fixture("total_all.json")),
+        mediatypes=["texts"],
+    )
+    source.search("lighthouse keeper", 8)
+    source.count("lighthouse")
+    source.total_documents()
+    assert session.calls[0]["params"]["q"] == "(lighthouse AND keeper) AND mediatype:(texts)"
+    assert all(call["params"]["q"].endswith("AND mediatype:(texts)") for call in session.calls)
+
+
+def test_mediatype_and_language_filters_combine() -> None:
+    source, session = make_source(
+        FakeResponse(body=fixture("search_two_terms.json")), mediatypes=["texts", "image"], languages=["en"]
+    )
+    source.search("lighthouse", 8)
+    assert session.calls[0]["params"]["q"] == (
+        "(lighthouse) AND mediatype:(texts OR image) "
+        "AND (language:(eng OR english OR en) OR (*:* -language:*))"
+    )
+
+
 def test_no_languages_means_no_filter() -> None:
     source, session = make_source(FakeResponse(body=fixture("search_two_terms.json")))
     source.search("lighthouse", 8)

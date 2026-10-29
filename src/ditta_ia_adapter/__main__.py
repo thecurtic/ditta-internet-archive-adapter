@@ -70,6 +70,7 @@ def build_app(config: config_module.Config, source: Source | None = None) -> App
         snippet_chars=config.snippet_chars,
         languages=config.languages if config.filter_languages else [],
         include_unlabeled=config.include_unlabeled,
+        mediatypes=config.mediatypes,
     )
     terms = TermStore(str(config.terms_db))
     terms.note_terms(config.seed_terms)

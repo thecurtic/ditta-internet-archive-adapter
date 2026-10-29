@@ -13,8 +13,6 @@ EnvironmentFile=-/etc/ditta-ia-adapter.env
 ExecStart=/srv/ditta-internet-archive-adapter/.venv/bin/ditta-ia-adapter serve --config /srv/ditta-internet-archive-adapter/config.toml
 Restart=on-failure
 RestartSec=10
-# The home directory is hidden below, so pip gets no cache.
-Environment=PIP_NO_CACHE_DIR=1
 # The service needs to write only its checkout (state databases, venv).
 NoNewPrivileges=yes
 ProtectSystem=strict

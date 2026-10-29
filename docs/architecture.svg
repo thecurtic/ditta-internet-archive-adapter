@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 456" role="img" aria-label="Every Internet Archive rule lives in the bottom layer" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13">
+  <style>
+    .ink { fill: #1f2328; }
+    .quiet { fill: #59636e; }
+    .box { fill: none; stroke: #a9b1ba; stroke-width: 1.25; }
+    .accent { fill: rgba(9, 105, 218, 0.12); stroke: #0969da; stroke-width: 2; }
+    .line { fill: none; stroke: #a9b1ba; stroke-width: 1.25; }
+    .head { fill: #a9b1ba; }
+    @media (prefers-color-scheme: dark) {
+      .ink { fill: #e6edf3; }
+      .quiet { fill: #9198a1; }
+      .box, .line { stroke: #656c76; }
+      .head { fill: #656c76; }
+      .accent { fill: rgba(56, 139, 253, 0.15); stroke: #4493f8; }
+    }
+  </style>
+  <defs>
+    <marker id="arch-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="head" d="M0 0L10 5L0 10z"/>
+    </marker>
+  </defs>
+
+  <text class="ink" x="24" y="34" font-size="15" font-weight="600">Every Internet Archive rule lives in the bottom layer</text>
+
+  <g class="line">
+    <path d="M254 96V120" marker-end="url(#arch-arrow)"/>
+    <path d="M254 176V200" marker-end="url(#arch-arrow)"/>
+    <path d="M254 272V296" marker-end="url(#arch-arrow)"/>
+    <path d="M254 368V392" marker-end="url(#arch-arrow)"/>
+    <path d="M484 332H532" marker-end="url(#arch-arrow)"/>
+  </g>
+
+  <rect class="box" x="154" y="56" width="200" height="40" rx="8"/>
+  <text class="ink" x="254" y="80" text-anchor="middle">Broker</text>
+
+  <rect class="box" x="24" y="120" width="460" height="56" rx="8"/>
+  <text class="ink" x="254" y="144" text-anchor="middle" font-weight="600">DITTA front</text>
+  <text class="quiet" x="254" y="160" text-anchor="middle" font-size="11.5">Validates messages, signs replies, serves the announcement</text>
+
+  <rect class="accent" x="24" y="200" width="460" height="72" rx="8"/>
+  <text class="ink" x="254" y="224" text-anchor="middle" font-weight="600">Adapter interface</text>
+  <text class="ink" x="254" y="240" text-anchor="middle" font-size="11.5">search(query, n) → ordered results</text>
+  <text class="ink" x="254" y="256" text-anchor="middle" font-size="11.5">count(term) → numFound</text>
+
+  <rect class="box" x="24" y="296" width="460" height="72" rx="8"/>
+  <text class="ink" x="254" y="320" text-anchor="middle" font-weight="600">Internet Archive client</text>
+  <text class="quiet" x="254" y="336" text-anchor="middle" font-size="11.5">Query translation, rate limit, backoff, cache</text>
+  <text class="quiet" x="254" y="352" text-anchor="middle" font-size="11.5">Requests via the internetarchive library</text>
+
+  <rect class="box" x="532" y="296" width="204" height="72" rx="8"/>
+  <text class="ink" x="634" y="320" text-anchor="middle" font-weight="600">Term store</text>
+  <text class="quiet" x="634" y="336" text-anchor="middle" font-size="11.5">SQLite term counts</text>
+  <text class="quiet" x="634" y="352" text-anchor="middle" font-size="11.5">Background count worker</text>
+
+  <rect class="box" x="154" y="392" width="200" height="40" rx="8"/>
+  <text class="ink" x="254" y="416" text-anchor="middle">Internet Archive search</text>
+</svg>

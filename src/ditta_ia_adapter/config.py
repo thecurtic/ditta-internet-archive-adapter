@@ -28,6 +28,8 @@ class Config:
     max_results: int = 50
     max_query_terms: int = 32
     snippet_chars: int = 300
+    filter_languages: bool = True  # limit searches to `languages`
+    include_unlabeled: bool = True  # ...but keep items with no language field
     # Corpus statistics
     terms_db: Path = Path("terms.sqlite")
     languages: list[str] = field(default_factory=lambda: ["en"])
@@ -74,7 +76,7 @@ def load(path: Path) -> Config:
     )
     _apply(config, server, ["host", "port"])
     _apply(config, archive, ["max_concurrent", "cache_seconds", "timeout_seconds"])
-    _apply(config, search, ["max_results", "max_query_terms", "snippet_chars"])
+    _apply(config, search, ["max_results", "max_query_terms", "snippet_chars", "filter_languages", "include_unlabeled"])
     _apply(config, corpus, [
         "languages", "seed_terms", "count_interval_seconds",
         "refresh_after_days", "expire_after_days", "max_corpus_terms",

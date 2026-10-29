@@ -38,6 +38,8 @@ class ArchiveSource:
         timeout_seconds: float = 20,
         max_terms: int = 32,
         snippet_chars: int = 300,
+        languages: list[str] | None = None,
+        include_unlabeled: bool = True,
         session: ArchiveSession | None = None,
         throttle: Throttle | None = None,
     ) -> None:
@@ -49,6 +51,8 @@ class ArchiveSource:
         self._timeout = timeout_seconds
         self._max_terms = max_terms
         self._snippet_chars = snippet_chars
+        # Applied to every request, so counts describe exactly what we serve.
+        self._language = q.language_filter(languages or [], include_unlabeled)
 
     def search(self, query: str, n: int) -> list[Result]:
         terms = q.split_terms(query, self._max_terms)
@@ -82,7 +86,7 @@ class ArchiveSource:
         """One advancedsearch request, always in the paged form."""
         # page + rows matter: without them the library's default returns every
         # match sorted by identifier, which breaks best-first ordering.
-        params = {"q": expression, "rows": rows, "page": 1, "output": "json"}
+        params = {"q": q.restrict(expression, self._language), "rows": rows, "page": 1, "output": "json"}
         for index, field in enumerate(fields):
             params[f"fl[{index}]"] = field
         if sort:

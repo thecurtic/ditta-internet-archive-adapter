@@ -6,6 +6,7 @@ import pytest
 import requests
 
 from conftest import FakeResponse, FakeSession, fixture
+from ditta_ia_adapter import __version__
 from ditta_ia_adapter.adapter import SourceBusy, SourceError, UnusableQuery
 from ditta_ia_adapter.ia import ArchiveSource
 from ditta_ia_adapter.ia.mapping import SEARCH_FIELDS, clean_text, truncate
@@ -258,7 +259,44 @@ def test_cache_expires_entries() -> None:
 
 def test_user_agent_names_the_tool_version_and_contact_but_no_model() -> None:
     source = ArchiveSource("https://example.com")
-    assert source.user_agent_suffix == "ditta-ia-adapter/0.1.0 (+https://example.com)"
+    expected = f"ditta-ia-adapter/{__version__} (+https://example.com)"
+    assert source.user_agent_suffix == expected
     user_agent = source._session.headers["User-Agent"]
-    assert user_agent.endswith("ditta-ia-adapter/0.1.0 (+https://example.com)")
+    assert user_agent.endswith(expected)
     assert "claude" not in user_agent.lower()
+
+
+# --- language scoping ---------------------------------------------------------
+
+
+def test_language_filter_keeps_english_and_unlabelled_items() -> None:
+    source, session = make_source(FakeResponse(body=fixture("search_two_terms.json")), languages=["en"])
+    source.search("lighthouse keeper", 8)
+    assert session.calls[0]["params"]["q"] == (
+        "(lighthouse AND keeper) AND (language:(eng OR english OR en) OR (*:* -language:*))"
+    )
+
+
+def test_language_filter_can_require_a_label() -> None:
+    source, session = make_source(
+        FakeResponse(body=fixture("search_two_terms.json")), languages=["en"], include_unlabeled=False
+    )
+    source.search("lighthouse", 8)
+    assert session.calls[0]["params"]["q"] == "(lighthouse) AND language:(eng OR english OR en)"
+
+
+def test_language_filter_applies_to_counts_and_corpus_size() -> None:
+    source, session = make_source(
+        FakeResponse(body=fixture("count_lighthouse.json")),
+        FakeResponse(body=fixture("total_all.json")),
+        languages=["en"],
+    )
+    source.count("lighthouse")
+    source.total_documents()
+    assert all("language:(eng" in call["params"]["q"] for call in session.calls)
+
+
+def test_no_languages_means_no_filter() -> None:
+    source, session = make_source(FakeResponse(body=fixture("search_two_terms.json")))
+    source.search("lighthouse", 8)
+    assert session.calls[0]["params"]["q"] == "lighthouse"

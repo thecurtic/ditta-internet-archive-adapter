@@ -48,6 +48,7 @@ The wire format (strict parsing, validation, canonical serialization, signing) i
 
 - Treat the query string as untrusted input. Never pass it to the Archive as is.
 - Split on whitespace, escape every Lucene special character in each term, and join with AND. If that returns zero results, retry once with OR. An empty query returns an error.
+- Limit every search, count and corpus-size request to the configured languages (default `en`), keeping unlabelled items unless configured otherwise. The filter comes from configuration only, never from the query.
 - Always search in the paged form (`page` and `rows`). The library's default returns every match sorted by identifier, which breaks DITTA's best-first ordering.
 - Never return more results than the request's max result count.
 

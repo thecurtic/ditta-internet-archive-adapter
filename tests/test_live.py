@@ -16,7 +16,7 @@ pytestmark = pytest.mark.skipif(os.environ.get("DITTA_IA_LIVE") != "1", reason="
 @pytest.fixture(scope="module")
 def source() -> ArchiveSource:
     contact = os.environ.get("DITTA_IA_CONTACT_URL", "https://example.com")
-    return ArchiveSource(contact, max_concurrent=1)
+    return ArchiveSource(contact, max_concurrent=1, languages=["en"])
 
 
 def test_live_search_returns_mapped_results_best_first(source: ArchiveSource) -> None:
@@ -31,4 +31,6 @@ def test_live_count_returns_count_and_newest(source: ArchiveSource) -> None:
 
 
 def test_live_total_documents(source: ArchiveSource) -> None:
-    assert source.total_documents() > 1_000_000
+    total = source.total_documents()
+    print(f"English-or-unlabelled corpus size: {total}")
+    assert total > 1_000_000

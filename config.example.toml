@@ -23,9 +23,14 @@ timeout_seconds = 20
 max_results = 50
 max_query_terms = 32
 snippet_chars = 300
+# Limit Archive searches to the languages announced under [corpus].
+filter_languages = true
+# Also keep items with no language field (about a third of the Archive).
+include_unlabeled = true
 
 [corpus]
 db_path = "terms.sqlite"
+# Announced to brokers, and used by [search] filter_languages.
 languages = ["en"]
 # Your own targeted searches, so the first statistics are not empty.
 seed_terms = []

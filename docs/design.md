@@ -26,6 +26,8 @@ The query string is treated as a bag of terms: all terms must match, and if that
 4. If that returns zero results, rerun once with OR.
 5. An empty query returns an error rather than a search.
 
+Every search is also limited to the announced languages, `en` by default and configurable. Items labelled English and items with no language label are kept; only items labelled in another language are left out. About a third of Archive items carry no label, so requiring one would drop much good audio and video. Counts and the corpus size use the same filter.
+
 The raw string is never passed through. The spec treats it as attacker-controlled input at the indexer, and here a pass-through would also let callers send expensive queries to the Archive's servers under the adapter's name.
 
 ## Result mapping
@@ -70,7 +72,7 @@ The queue stores bare terms only. It never records whole query strings, requeste
 
 The adapter is free: it announces a single `per_query` pricing option at a price of 0 and never sends a 402 challenge. Free access avoids charging for the Archive's data and keeps the adapter a clean demonstration.
 
-The announcement names the indexer role with a corpus description pointing to the Internet Archive, and serves corpus statistics from the term table. Its total document count is the size the Archive publishes through its search API (`numFound` for `*:*`, 128,351,232 on 2026-10-29), refreshed daily. Every message the adapter sends is signed, result sets and errors included.
+The announcement names the indexer role with a corpus description pointing to the Internet Archive, and serves corpus statistics from the term table. Its total document count is the size the Archive publishes through its search API (`numFound` for `*:*` under the language filter: 112,761,507 of 128,351,232 on 2026-10-29), refreshed daily. Every message the adapter sends is signed, result sets and errors included.
 
 For discovery, the adapter keeps the newest valid announcement per pubkey, relays each new one unchanged to the other nodes it knows, and announces itself to every node it has seen, starting from a seed list in configuration. It never connects to loopback, private or link-local addresses unless configured to, and bounds its outbound connection rate.
 

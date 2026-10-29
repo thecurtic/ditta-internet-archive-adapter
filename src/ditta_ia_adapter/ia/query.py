@@ -32,6 +32,44 @@ def escape_term(term: str) -> str:
     return "".join("\\" + char if char in _SPECIAL else char for char in term)
 
 
+# How the Archive's `language` field spells a BCP-47 tag. Values are matched
+# case-blind, so "English" and "english" are one value. A tag missing here is
+# matched as written.
+_LANGUAGE_VALUES = {
+    "en": ["eng", "english", "en"],
+    "fr": ["fre", "fra", "french", "fr"],
+    "de": ["ger", "deu", "german", "de"],
+    "es": ["spa", "spanish", "es"],
+    "it": ["ita", "italian", "it"],
+    "pt": ["por", "portuguese", "pt"],
+    "nl": ["dut", "nld", "dutch", "nl"],
+    "ru": ["rus", "russian", "ru"],
+    "ja": ["jpn", "japanese", "ja"],
+    "zh": ["chi", "zho", "chinese", "zh"],
+    "ar": ["ara", "arabic", "ar"],
+}
+
+
+def language_filter(tags: list[str], include_unlabeled: bool) -> str | None:
+    """A clause limiting results to items in `tags`, or None for no limit.
+
+    About a third of Archive items carry no `language` field at all (much
+    audio and video), so by default unlabelled items are kept and only items
+    labelled in some other language are left out.
+    """
+    values = [v for tag in tags for v in _LANGUAGE_VALUES.get(tag.lower(), [tag])]
+    if not values:
+        return None
+    labelled = "language:(" + " OR ".join(escape_term(v) for v in values) + ")"
+    if include_unlabeled:
+        return f"({labelled} OR (*:* -language:*))"
+    return labelled
+
+
+def restrict(expression: str, clause: str | None) -> str:
+    return f"({expression}) AND {clause}" if clause else expression
+
+
 def all_terms(terms: list[str]) -> str:
     return " AND ".join(escape_term(term) for term in terms)
 

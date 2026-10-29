@@ -34,6 +34,8 @@ The query string is untrusted input and is never passed to the Archive as is. It
 
 A pass-through would let anyone send expensive queries to the Archive's servers under this adapter's name. The protocol leaves interpretation to the indexer, so this translation is the adapter's main job.
 
+Searches are limited to the announced languages (`en` by default). The Archive's `language` field is free text (`eng`, `English`, `en` all appear) and about a third of items have none, mostly audio and video. So by default the adapter keeps items labelled English *and* items with no label, and leaves out only items labelled in another language. For "lighthouse keeper" that keeps 475 of 485 hits, where requiring the label would keep 315. Set `include_unlabeled = false` to require the label, or `filter_languages = false` to search everything. The same filter applies to term counts and the corpus size, so the statistics describe exactly what is served.
+
 Results keep the Archive's relevance order (confirmed against the live Archive). Each search is one request in the paged form (`page` and `rows`), asking only for the fields the mapping below uses, so no per-result metadata lookups are ever made.
 
 | DITTA field | Source |
@@ -84,7 +86,7 @@ The adapter announces the `indexer` role with a single `per_query` pricing optio
 
 Its corpus summary reports:
 
-- the Archive's total item count as its search API publishes it (`numFound` for `*:*`, about 128 million), refreshed daily;
+- the Archive's item count as its search API publishes it, under the same language filter (`numFound`; about 113 million of 128 million for English or unlabelled), refreshed daily;
 - the number of counted terms in its store, a lower bound rather than the Archive's real vocabulary, which it cannot know;
 - the snapshot time, the configured languages (default `["en"]`), and statistics format `0`.
 
@@ -100,7 +102,38 @@ ditta-ia-adapter keygen node.key     # prints the node's pubkey; keep the file p
 ditta-ia-adapter serve --config config.toml
 ```
 
-The server listens on `127.0.0.1:8080` by default. If `node.endpoint` has a path, such as `https://example.com/ditta`, requests are accepted under that prefix as well as at the root, so the proxy may forward with or without it.
+The server listens on `127.0.0.1:8080` by default.
+
+### Running as a service, with automatic updates
+
+`deploy/` holds a systemd setup that keeps the adapter running and on the latest commit of `main`:
+
+| File | What it does |
+| --- | --- |
+| `ditta-ia-adapter.service` | Runs the adapter as user `ditta` from `/opt/ditta-ia-adapter`, restarts it if it crashes, and pulls any new commit before each start. |
+| `ditta-ia-adapter-update.timer` | Runs the updater every 15 minutes (first run 5 minutes after boot). |
+| `ditta-ia-adapter-update.service` | The updater the timer starts. |
+| `update.sh` | Fetches `main` and, if it moved, tests the new commit, installs it and restarts the service. |
+
+The updater tests every new commit from a clean export before the checkout moves. If the tests fail, nothing changes: the service keeps running the last good commit, the failure is logged, and that commit is not retried. The next push that passes is picked up as usual. Git, pip and the tests run as the `ditta` user; root is used only to restart the service.
+
+One-time setup, as root (the paths are the units' defaults; edit both if you change them):
+
+```sh
+useradd --system --home-dir /opt/ditta-ia-adapter --shell /usr/sbin/nologin ditta
+git clone <this repository's URL> /opt/ditta-ia-adapter     # a read-only deploy key is enough
+chown -R ditta:ditta /opt/ditta-ia-adapter
+cd /opt/ditta-ia-adapter
+runuser -u ditta -- python3 -m venv .venv
+runuser -u ditta -- cp config.example.toml config.toml      # then edit it
+runuser -u ditta -- deploy/update.sh --no-restart           # installs and tests
+runuser -u ditta -- .venv/bin/ditta-ia-adapter keygen node.key
+cp deploy/*.service deploy/*.timer /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now ditta-ia-adapter.service ditta-ia-adapter-update.timer
+```
+
+Put Internet Archive keys, if you have them, in `/etc/ditta-ia-adapter.env` (mode 0600). Watch it with `journalctl -u ditta-ia-adapter -u ditta-ia-adapter-update`, and run an update by hand with `systemctl start ditta-ia-adapter-update`. If `node.endpoint` has a path, such as `https://example.com/ditta`, requests are accepted under that prefix as well as at the root, so the proxy may forward with or without it.
 
 - **Configuration** lives in `config.toml`, which `.gitignore` excludes; `config.example.toml` documents every setting.
 - **Credentials.** Internet Archive keys are optional and come only from the environment: `IA_ACCESS_KEY` and `IA_SECRET_KEY`. The `internetarchive` library may also read its own `ia.ini` config file if one exists on the machine.

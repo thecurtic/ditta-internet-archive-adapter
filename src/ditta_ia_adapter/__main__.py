@@ -67,6 +67,8 @@ def build_app(config: config_module.Config, source: Source | None = None) -> App
         timeout_seconds=config.timeout_seconds,
         max_terms=config.max_query_terms,
         snippet_chars=config.snippet_chars,
+        languages=config.languages if config.filter_languages else [],
+        include_unlabeled=config.include_unlabeled,
     )
     terms = TermStore(str(config.terms_db))
     terms.note_terms(config.seed_terms)

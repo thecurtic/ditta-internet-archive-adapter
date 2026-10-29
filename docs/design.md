@@ -23,7 +23,7 @@ The query string is treated as a bag of terms: all terms must match, and if that
 1. Split the string on whitespace.
 2. Escape every Lucene special character in each term, so the caller can never inject field queries, wildcards or ranges.
 3. Join the terms with AND and run the search.
-4. If that returns zero results, rerun once with OR.
+4. If that returns fewer results than requested, search for items matching every term but one (an OR of the AND of each subset missing one term; 3 to 8 terms only), then, if still short, any term (OR). Each step's new results go after the earlier ones, so stricter matches always rank first.
 5. An empty query returns an error rather than a search.
 
 Every search is also limited to the announced languages, `en` by default and configurable. Items labelled English and items with no language label are kept; only items labelled in another language are left out. About a third of Archive items carry no label, so requiring one would drop much good audio and video. Counts and the corpus size use the same filter.
@@ -49,11 +49,12 @@ The result count never exceeds the query's max result count. Every media type is
 
 Every request goes through the official `internetarchive` Python library, which is the Archive's supported path to search and handles the User-Agent suffix and credentials. The Archive's [automated access guidance](https://archive.org/developers/bots.html) sets the rules below.
 
-- **User-Agent:** a tool name and version on every request, such as `ditta-ia-adapter/0.1.0 (+https://example.com)`. The URL is the operator's contact page, set in configuration, so the Archive can see who runs it and how to reach them. No model name, since the adapter is not an AI agent.
+- **User-Agent:** a tool name and version on every request, such as `ditta-ia-adapter/0.2.0 (+https://example.com)`. The URL is the operator's contact page, set in configuration, so the Archive can see who runs it and how to reach them. No model name, since the adapter is not an AI agent.
 - **Rate limits:** honour `429` responses and `Retry-After`, with exponential backoff on errors.
 - **Caching:** identical searches within a short window are served from cache instead of re-sent.
-- **Concurrency:** a small fixed cap on simultaneous requests.
-- **Credentials:** authenticate when an account key is available.
+- **Concurrency:** a small fixed cap on simultaneous requests (2), and a minimum gap between request starts (1 second).
+- **Credentials:** authenticate when an account key is available, read from the library's own `IA_ACCESS_KEY_ID` and `IA_SECRET_ACCESS_KEY`.
+- **AI agents:** the adapter is not one and names no model; any request an AI coding agent makes during development names its model in the User-Agent, as the Archive's rules require.
 
 While the client is backing off, the adapter returns an error to new queries instead of searching. It never answers a query with an empty result set because it was throttled, since a broker would read that as no matches.
 

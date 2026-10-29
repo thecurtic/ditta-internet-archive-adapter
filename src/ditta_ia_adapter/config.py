@@ -1,7 +1,9 @@
 """Operator configuration, read from a TOML file plus environment variables.
 
-Secrets never live in the file: Internet Archive keys come from
-IA_ACCESS_KEY / IA_SECRET_KEY, and the node key from its own key file.
+Secrets never live in the file: Internet Archive keys come from the
+internetarchive library's own variables, IA_ACCESS_KEY_ID and
+IA_SECRET_ACCESS_KEY (IA_ACCESS_KEY / IA_SECRET_KEY, this adapter's first
+names for them, still work), and the node key from its own key file.
 """
 
 import os
@@ -22,6 +24,7 @@ class Config:
     access_key: str | None = None
     secret_key: str | None = None
     max_concurrent: int = 2
+    min_request_interval_seconds: float = 1.0
     cache_seconds: float = 600
     timeout_seconds: float = 20
     # Search
@@ -69,13 +72,13 @@ def load(path: Path) -> Config:
         endpoint=node["endpoint"].rstrip("/"),
         contact_url=archive["contact_url"],
         key_file=base / node.get("key_file", "node.key"),
-        access_key=os.environ.get("IA_ACCESS_KEY") or None,
-        secret_key=os.environ.get("IA_SECRET_KEY") or None,
+        access_key=_env("IA_ACCESS_KEY_ID", "IA_ACCESS_KEY"),
+        secret_key=_env("IA_SECRET_ACCESS_KEY", "IA_SECRET_KEY"),
         terms_db=base / corpus.get("db_path", "terms.sqlite"),
         peers_db=base / discovery.get("db_path", "peers.sqlite"),
     )
     _apply(config, server, ["host", "port"])
-    _apply(config, archive, ["max_concurrent", "cache_seconds", "timeout_seconds"])
+    _apply(config, archive, ["max_concurrent", "min_request_interval_seconds", "cache_seconds", "timeout_seconds"])
     _apply(config, search, ["max_results", "max_query_terms", "snippet_chars", "filter_languages", "include_unlabeled"])
     _apply(config, corpus, [
         "languages", "seed_terms", "count_interval_seconds",
@@ -86,6 +89,14 @@ def load(path: Path) -> Config:
     ])
     _apply(config, raw.get("logging", {}), ["log_queries"])
     return config
+
+
+def _env(*names: str) -> str | None:
+    """The first of these environment variables that is set and non-empty."""
+    for name in names:
+        if os.environ.get(name):
+            return os.environ[name]
+    return None
 
 
 def _apply(config: Config, section: dict, names: list[str]) -> None:

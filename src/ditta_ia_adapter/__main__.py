@@ -63,6 +63,7 @@ def build_app(config: config_module.Config, source: Source | None = None) -> App
         access_key=config.access_key,
         secret_key=config.secret_key,
         max_concurrent=config.max_concurrent,
+        min_interval_seconds=config.min_request_interval_seconds,
         cache_seconds=config.cache_seconds,
         timeout_seconds=config.timeout_seconds,
         max_terms=config.max_query_terms,

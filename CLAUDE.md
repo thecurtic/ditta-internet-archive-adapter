@@ -4,5 +4,5 @@
 
 - Follow AGENTS.md in full; this file only adds Claude Code posture.
 - Plan before editing: for anything beyond a small fix, outline the change and wait for approval.
-- Run the test suite after every change and report the result. Never run live Internet Archive tests unless asked.
+- Run the test suite after every change and report the result. Never run live Internet Archive tests unless asked; when you do, set `DITTA_IA_AGENT` to your model identifier so the Archive sees which model is making the requests.
 - Commit and push when the maintainer asks. Never force-push or change remotes without explicit approval.

@@ -2,6 +2,10 @@
 
 Skipped unless DITTA_IA_LIVE=1. They make three requests in total, through
 the same throttle as production, and print nothing but numbers.
+
+An AI coding agent running them must set DITTA_IA_AGENT to its model
+identifier: the Archive's bot rules require AI agents to name their model in
+the User-Agent.
 """
 
 import os
@@ -16,7 +20,8 @@ pytestmark = pytest.mark.skipif(os.environ.get("DITTA_IA_LIVE") != "1", reason="
 @pytest.fixture(scope="module")
 def source() -> ArchiveSource:
     contact = os.environ.get("DITTA_IA_CONTACT_URL", "https://example.com")
-    return ArchiveSource(contact, max_concurrent=1, languages=["en"])
+    agent = os.environ.get("DITTA_IA_AGENT") or None
+    return ArchiveSource(contact, max_concurrent=1, agent=agent, languages=["en"])
 
 
 def test_live_search_returns_mapped_results_best_first(source: ArchiveSource) -> None:

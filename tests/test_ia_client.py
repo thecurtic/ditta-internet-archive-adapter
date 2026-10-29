@@ -10,12 +10,13 @@ from ditta_ia_adapter import __version__
 from ditta_ia_adapter.adapter import SourceBusy, SourceError, UnusableQuery
 from ditta_ia_adapter.ia import ArchiveSource
 from ditta_ia_adapter.ia.mapping import SEARCH_FIELDS, clean_text, truncate
-from ditta_ia_adapter.ia.query import all_terms, any_term, escape_term
+from ditta_ia_adapter.ia.query import all_but_one, all_terms, any_term, escape_term
 from ditta_ia_adapter.ia.throttle import Throttle, TTLCache, parse_retry_after
 
 
 def make_source(*responses, **kwargs) -> tuple[ArchiveSource, FakeSession]:
     session = FakeSession(*responses)
+    kwargs.setdefault("min_interval_seconds", 0)  # spacing has its own test
     source = ArchiveSource("https://example.com", session=session, **kwargs)
     return source, session
 
@@ -73,6 +74,79 @@ def test_zero_hits_retries_once_with_or() -> None:
     results = source.search("zzqx lighthouse", 8)
     assert [call["params"]["q"] for call in session.calls] == ["zzqx AND lighthouse", "zzqx OR lighthouse"]
     assert len(results) == 8
+
+
+def docs_body(*identifiers: str) -> dict:
+    docs = [{"identifier": i, "description": f"about {i}"} for i in identifiers]
+    return {"response": {"numFound": len(docs), "docs": docs}}
+
+
+def test_short_results_step_down_to_all_but_one_then_any_term() -> None:
+    source, session = make_source(
+        FakeResponse(body=docs_body("all-1")),
+        FakeResponse(body=docs_body("all-1", "most-1")),
+        FakeResponse(body=docs_body("any-1", "most-1", "any-2", "any-3")),
+    )
+    results = source.search("gore street vancouver", 4)
+    assert [call["params"]["q"] for call in session.calls] == [
+        "gore AND street AND vancouver",
+        "(gore AND street) OR (gore AND vancouver) OR (street AND vancouver)",
+        "gore OR street OR vancouver",
+    ]
+    # Stricter matches first, no duplicates, never more than n.
+    assert [r.id for r in results] == ["all-1", "most-1", "any-1", "any-2"]
+
+
+def test_all_but_one_filling_the_page_skips_any_term() -> None:
+    source, session = make_source(
+        FakeResponse(body=docs_body("all-1")),
+        FakeResponse(body=docs_body("most-1", "most-2")),
+    )
+    assert [r.id for r in source.search("a b c", 3)] == ["all-1", "most-1", "most-2"]
+    assert len(session.calls) == 2
+
+
+def test_two_terms_skip_all_but_one() -> None:
+    source, session = make_source(
+        FakeResponse(body=docs_body("all-1")),
+        FakeResponse(body=docs_body("any-1")),
+    )
+    source.search("lighthouse keeper", 3)
+    assert [call["params"]["q"] for call in session.calls] == ["lighthouse AND keeper", "lighthouse OR keeper"]
+
+
+def test_long_queries_skip_all_but_one() -> None:
+    assert all_but_one(list("abcdefgh")) is not None
+    assert all_but_one(list("abcdefghi")) is None
+    assert all_but_one(["a", "b"]) is None
+
+
+def test_all_but_one_escapes_every_term() -> None:
+    assert all_but_one(["a:b", "c*", "d"]) == "(a\\:b AND c\\*) OR (a\\:b AND d) OR (c\\* AND d)"
+
+
+def test_enough_strict_matches_make_one_request() -> None:
+    source, session = make_source(FakeResponse(body=docs_body("a", "b", "c")))
+    assert [r.id for r in source.search("two terms", 3)] == ["a", "b", "c"]
+    assert len(session.calls) == 1
+
+
+def test_throttled_top_up_returns_strict_matches_uncached() -> None:
+    source, session = make_source(
+        FakeResponse(body=docs_body("strict-1")),
+        FakeResponse(status=429, headers={"Retry-After": "1"}),
+    )
+    assert [r.id for r in source.search("two terms", 3)] == ["strict-1"]
+    assert source._cache.get(("search", ("two", "terms"), 3)) is None
+
+
+def test_throttled_top_up_with_no_strict_matches_is_busy_not_empty() -> None:
+    source, _ = make_source(
+        FakeResponse(body=fixture("search_no_hits.json")),
+        FakeResponse(status=429, headers={"Retry-After": "1"}),
+    )
+    with pytest.raises(SourceBusy):
+        source.search("zzqx lighthouse", 8)
 
 
 def test_single_term_with_zero_hits_makes_one_request() -> None:
@@ -233,6 +307,26 @@ def test_backoff_grows_exponentially_and_resets_on_success() -> None:
     assert throttle.seconds_until_resume() == 2
 
 
+def test_requests_start_at_least_min_interval_apart() -> None:
+    now, slept = [100.0], []
+
+    def sleep(seconds: float) -> None:
+        slept.append(seconds)
+        now[0] += seconds
+
+    throttle = Throttle(max_concurrent=2, min_interval=1.0, clock=lambda: now[0], sleep=sleep)
+    for _ in range(3):
+        throttle.acquire()
+        throttle.release()
+        now[0] += 0.25  # each request takes a quarter second
+    assert slept == [0.75, 0.75]
+
+
+def test_production_default_spaces_requests_one_second_apart() -> None:
+    source = ArchiveSource("https://example.com", session=FakeSession())
+    assert source._throttle._min_interval == 1.0
+
+
 def test_concurrency_cap_refuses_when_slots_are_taken() -> None:
     throttle = Throttle(max_concurrent=1)
     throttle.acquire()
@@ -264,6 +358,11 @@ def test_user_agent_names_the_tool_version_and_contact_but_no_model() -> None:
     user_agent = source._session.headers["User-Agent"]
     assert user_agent.endswith(expected)
     assert "claude" not in user_agent.lower()
+
+
+def test_an_ai_agent_running_the_client_is_named_in_the_user_agent() -> None:
+    source = ArchiveSource("https://example.com", agent="claude-opus-5-5", session=FakeSession())
+    assert source.user_agent_suffix == f"ditta-ia-adapter/{__version__} (+https://example.com; claude-opus-5-5)"
 
 
 # --- language scoping ---------------------------------------------------------

@@ -33,3 +33,20 @@ def test_config_to_running_server_answers_queries_offline(tmp_path, sample_resul
     finally:
         app.server.shutdown()
         app.stop()
+
+
+def test_archive_keys_use_the_librarys_variable_names(tmp_path, monkeypatch) -> None:
+    (tmp_path / "config.toml").write_text(
+        '[node]\nendpoint = "https://example.com"\n[archive]\ncontact_url = "https://example.com"\n'
+    )
+    monkeypatch.setenv("IA_ACCESS_KEY_ID", "official-access")
+    monkeypatch.setenv("IA_SECRET_ACCESS_KEY", "official-secret")
+    monkeypatch.setenv("IA_ACCESS_KEY", "old-access")
+    loaded = config.load(tmp_path / "config.toml")
+    assert (loaded.access_key, loaded.secret_key) == ("official-access", "official-secret")
+
+    monkeypatch.delenv("IA_ACCESS_KEY_ID")
+    monkeypatch.delenv("IA_SECRET_ACCESS_KEY")
+    monkeypatch.setenv("IA_SECRET_KEY", "old-secret")
+    loaded = config.load(tmp_path / "config.toml")
+    assert (loaded.access_key, loaded.secret_key) == ("old-access", "old-secret")

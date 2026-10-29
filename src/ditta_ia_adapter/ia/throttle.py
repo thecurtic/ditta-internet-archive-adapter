@@ -18,11 +18,22 @@ MAX_BACKOFF_SECONDS = 600
 class Throttle:
     """Gate every request: refuse while backing off, cap concurrency."""
 
-    def __init__(self, max_concurrent: int, base_backoff: float = 2.0, clock=time.monotonic) -> None:
+    def __init__(
+        self,
+        max_concurrent: int,
+        base_backoff: float = 2.0,
+        min_interval: float = 0.0,
+        clock=time.monotonic,
+        sleep=time.sleep,
+    ) -> None:
         self._slots = threading.BoundedSemaphore(max_concurrent)
         self._lock = threading.Lock()
+        self._spacing = threading.Lock()
         self._base = base_backoff
+        self._min_interval = min_interval
+        self._last_start = float("-inf")
         self._clock = clock
+        self._sleep = sleep
         self._failures = 0
         self._resume_at = 0.0
 
@@ -32,11 +43,20 @@ class Throttle:
         if not self._slots.acquire(timeout=wait_seconds):
             raise SourceBusy(retry_after=int(wait_seconds))
         try:
+            self._wait_for_spacing()
             # Another request may have started a backoff while this one waited.
             self._raise_if_backing_off()
         except SourceBusy:
             self._slots.release()
             raise
+
+    def _wait_for_spacing(self) -> None:
+        """Start requests at least `min_interval` seconds apart, in order."""
+        with self._spacing:
+            wait = self._last_start + self._min_interval - self._clock()
+            if wait > 0:
+                self._sleep(wait)
+            self._last_start = self._clock()
 
     def release(self) -> None:
         self._slots.release()

@@ -47,7 +47,7 @@ The wire format (strict parsing, validation, canonical serialization, signing) i
 ### Query handling
 
 - Treat the query string as untrusted input. Never pass it to the Archive as is.
-- Split on whitespace, escape every Lucene special character in each term, and join with AND. If that returns zero results, retry once with OR. An empty query returns an error.
+- Split on whitespace and escape every Lucene special character in each term. Search in up to three steps, each run only while fewer than the requested number of results have been found, each appending its new results after the earlier ones: all terms joined with AND; then every term but one (an OR of the AND of each subset missing one term, for 3 to 8 terms only); then all terms joined with OR. An empty query returns an error.
 - Limit every search, count and corpus-size request to the configured languages (default `en`), keeping unlabelled items unless configured otherwise. The filter comes from configuration only, never from the query.
 - Always search in the paged form (`page` and `rows`). The library's default returns every match sorted by identifier, which breaks DITTA's best-first ordering.
 - Never return more results than the request's max result count.
@@ -70,8 +70,11 @@ Treat every string from the Archive as untrusted display content: strip markup, 
 The Archive's automated access rules (<https://archive.org/developers/bots.html>) are hard requirements.
 
 - Every request goes through the official `internetarchive` Python library.
-- Every request carries a User-Agent with the tool name, version, and the operator's contact URL from configuration. No AI model names.
+- Every request carries a User-Agent with the tool name, version, and the operator's contact URL from configuration. The deployed adapter is not an AI agent, so it names no model. But any request an AI coding agent makes to the Archive (live tests, probes, recording fixtures) must name that agent's model in the User-Agent, as the Archive's rules require: set `DITTA_IA_AGENT` for live tests, or pass `agent=` to `ArchiveSource`.
+- Space requests: every request starts at least `min_request_interval_seconds` (default 1) after the previous one, across live queries and the count worker.
 - Honour `429` and `Retry-After`; back off exponentially on errors; cap concurrent requests; cache identical searches for a short window.
+- Authenticate when the operator has keys, read from the library's own variables, `IA_ACCESS_KEY_ID` and `IA_SECRET_ACCESS_KEY`.
+- Live requests during development are few, sequential, and only when the maintainer has agreed to them.
 - While backing off, answer new queries with a DITTA error (`rate_limited`). Never return an empty result set because the adapter was throttled.
 
 ### Signing

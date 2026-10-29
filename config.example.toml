@@ -1,6 +1,6 @@
 # Copy to config.toml (which .gitignore excludes) and edit.
 # Internet Archive keys, if you have them, go in the environment:
-#   IA_ACCESS_KEY=...  IA_SECRET_KEY=...
+#   IA_ACCESS_KEY_ID=...  IA_SECRET_ACCESS_KEY=...
 
 [node]
 # The public base URL brokers reach, behind your TLS reverse proxy.
@@ -16,6 +16,8 @@ port = 8080
 # Sent in the User-Agent so the Archive can see who runs this and reach them.
 contact_url = "https://example.com"
 max_concurrent = 2
+# Every request to the Archive starts at least this long after the last one.
+min_request_interval_seconds = 1.0
 cache_seconds = 600
 timeout_seconds = 20
 

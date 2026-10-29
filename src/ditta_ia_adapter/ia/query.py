@@ -7,6 +7,8 @@ never passed through, so a caller cannot send field queries, wildcards,
 ranges or other expensive searches to the Archive under our name.
 """
 
+from itertools import combinations
+
 from ..adapter import UnusableQuery
 
 # Lucene's special characters. "&&" and "||" are covered by "&" and "|".
@@ -72,6 +74,23 @@ def restrict(expression: str, clause: str | None) -> str:
 
 def all_terms(terms: list[str]) -> str:
     return " AND ".join(escape_term(term) for term in terms)
+
+
+# All-but-one is an OR of n clauses of n-1 terms each, so it grows with the
+# square of the term count. Past this many terms the expression gets long
+# enough to be an expensive search, and the search goes straight to any-term.
+MAX_TERMS_FOR_ALL_BUT_ONE = 8
+
+
+def all_but_one(terms: list[str]) -> str | None:
+    """Items matching every term but one, or None when the step is pointless.
+
+    With two terms, all-but-one is the same as any-term.
+    """
+    if not 3 <= len(terms) <= MAX_TERMS_FOR_ALL_BUT_ONE:
+        return None
+    clauses = (all_terms(list(subset)) for subset in combinations(terms, len(terms) - 1))
+    return " OR ".join(f"({clause})" for clause in clauses)
 
 
 def any_term(terms: list[str]) -> str:

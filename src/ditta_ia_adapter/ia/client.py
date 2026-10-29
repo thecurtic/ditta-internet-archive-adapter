@@ -7,6 +7,10 @@ object for two reasons: Search parses the body without looking at the HTTP
 status, so a 429 and its Retry-After would be invisible to us; and it
 mounts its own retry adapter, which would retry behind our backoff. Here
 the library's retries are off and Throttle is the only retry policy.
+
+Throttle also spaces every request (searches, counts, the corpus size) at
+least `min_interval_seconds` apart: the Archive asks automated clients to
+add delays between requests, not only to cap concurrency.
 """
 
 import logging
@@ -34,19 +38,25 @@ class ArchiveSource:
         access_key: str | None = None,
         secret_key: str | None = None,
         max_concurrent: int = 2,
+        min_interval_seconds: float = 1.0,
         cache_seconds: float = 600,
         timeout_seconds: float = 20,
         max_terms: int = 32,
         snippet_chars: int = 300,
+        agent: str | None = None,
         languages: list[str] | None = None,
         include_unlabeled: bool = True,
         session: ArchiveSession | None = None,
         throttle: Throttle | None = None,
     ) -> None:
-        self.user_agent_suffix = f"{TOOL_NAME}/{__version__} (+{contact_url})"
+        # `agent` names the AI model driving the client, which the Archive's
+        # bot rules require for AI agents. The deployed adapter is not one and
+        # leaves it out; live tests run by a coding agent set it.
+        details = f"+{contact_url}" + (f"; {agent}" if agent else "")
+        self.user_agent_suffix = f"{TOOL_NAME}/{__version__} ({details})"
         self._session = session or _make_session(self.user_agent_suffix, access_key, secret_key)
         self._auth = S3Auth(access_key, secret_key) if access_key and secret_key else None
-        self._throttle = throttle or Throttle(max_concurrent)
+        self._throttle = throttle or Throttle(max_concurrent, min_interval=min_interval_seconds)
         self._cache = TTLCache(cache_seconds)
         self._timeout = timeout_seconds
         self._max_terms = max_terms
@@ -60,14 +70,41 @@ class ArchiveSource:
         if cached is not None:
             return cached
 
-        docs, found = self._search(q.all_terms(terms), SEARCH_FIELDS, rows=n)
-        if found == 0 and len(terms) > 1:
-            docs, found = self._search(q.any_term(terms), SEARCH_FIELDS, rows=n)
+        # Strictest first: every term, then every term but one, then any term.
+        # Each step runs only while places are left, and its results go after
+        # the earlier ones, so a stricter match is never pushed down by a
+        # looser one.
+        steps = [q.all_terms(terms)]
+        if len(terms) > 1:
+            steps += [q.all_but_one(terms), q.any_term(terms)]
 
-        results = [r for r in (to_result(doc, self._snippet_chars) for doc in docs) if r]
+        results: list[Result] = []
+        seen: set[str] = set()
+        complete = True
+        for expression in filter(None, steps):
+            if len(results) >= n:
+                break
+            try:
+                docs, _ = self._search(expression, SEARCH_FIELDS, rows=n)
+            except SourceBusy:
+                # Throttled is never answered with an empty set; with matches
+                # in hand, return those, uncached so a retry can fill the rest.
+                if not results:
+                    raise
+                complete = False
+                break
+            for result in self._to_results(docs):
+                if result.id not in seen:
+                    seen.add(result.id)
+                    results.append(result)
+
         results = results[:n]
-        self._cache.put(("search", tuple(terms), n), results)
+        if complete:
+            self._cache.put(("search", tuple(terms), n), results)
         return results
+
+    def _to_results(self, docs: list[dict]) -> list[Result]:
+        return [r for r in (to_result(doc, self._snippet_chars) for doc in docs) if r]
 
     def count(self, term: str) -> TermStats:
         # One request gives both numbers: numFound, and the newest item's

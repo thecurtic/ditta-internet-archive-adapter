@@ -29,8 +29,11 @@ The query string is untrusted input and is never passed to the Archive as is. It
 
 1. Split on whitespace. An empty query is answered with an error (`rejected`), not a search. So is one with more than 32 terms.
 2. Escape every Lucene special character in each term (`+ - & | ! ( ) { } [ ] ^ " ~ * ? : \ /`), and lowercase the bare operator words `AND`, `OR` and `NOT`. A caller can never send a field query, wildcard, range or boolean expression.
-3. Join the terms with `AND` and search.
-4. If that finds nothing and there is more than one term, search once more with `OR`.
+3. Search for items matching **every term**.
+4. If that found fewer results than asked for, search for items matching **every term but one** (for 3 to 8 terms).
+5. If still short, search for items matching **any term**.
+
+Each step runs only while places are left, and its new results go after the earlier ones, so a stricter match is never pushed down by a looser one. For "Gore street angle vancouver", all four words appear together in a single item, a radio transcript; the all-but-one step then adds Vancouver council minutes and a report on the Stratford Hotel fire, at Gore and Keefer. Any-term on its own is dominated by common words ("street" alone matches thousands of street-photo uploads), which is why it comes last. A query makes at most three requests, and repeats come from the cache.
 
 A pass-through would let anyone send expensive queries to the Archive's servers under this adapter's name. The protocol leaves interpretation to the indexer, so this translation is the adapter's main job.
 
@@ -51,11 +54,11 @@ Every media type is searched. An item is returned when it has an identifier (so 
 
 The Archive's [automated access guidance](https://archive.org/developers/bots.html) is treated as hard requirements, all enforced in one module (`src/ditta_ia_adapter/ia/`):
 
-- **One library.** Every request goes through the official [`internetarchive`](https://pypi.org/project/internetarchive/) library's session, which also carries credentials when the operator has an Archive account.
-- **User-Agent.** Every request names the tool, its version and the operator's contact URL, for example `ditta-ia-adapter/0.1.0 (+https://example.com)`, after the library's own User-Agent. No AI model names.
+- **One library.** Every request goes through the official [`internetarchive`](https://pypi.org/project/internetarchive/) library's session, which also authenticates when the operator has Archive keys (`IA_ACCESS_KEY_ID` and `IA_SECRET_ACCESS_KEY`).
+- **User-Agent.** Every request names the tool, its version and the operator's contact URL, for example `ditta-ia-adapter/0.2.0 (+https://example.com)`, after the library's own User-Agent. The running adapter is not an AI agent, so it names no model. When an AI coding agent runs the live tests, it names its model too, as the Archive requires (see Development).
 - **Rate limits.** A `429` or a `5xx` starts a backoff, honouring `Retry-After` when present and otherwise doubling from 2 seconds up to 10 minutes.
 - **Throttled is not empty.** While backing off, the adapter sends nothing to the Archive and answers queries with `rate_limited` (HTTP 503 with `Retry-After`). It never answers with an empty result set because it was throttled, since a broker would read that as "no matches".
-- **Concurrency.** At most 2 requests to the Archive at once, shared by live queries and the background counter.
+- **Concurrency and spacing.** At most 2 requests to the Archive at once, and each starts at least 1 second after the previous one, across live queries and the background counter.
 - **Caching.** Identical searches within 10 minutes are served from memory.
 
 The adapter calls the library's session directly rather than its `Search` helper. The helper parses the response body without looking at the HTTP status, so a `429` and its `Retry-After` would be invisible, and it retries on its own behind our backoff. With the library's retries off, the adapter's backoff is the only retry policy.
@@ -133,10 +136,10 @@ systemctl daemon-reload
 systemctl enable --now ditta-ia-adapter.service ditta-ia-adapter-update.timer
 ```
 
-Put Internet Archive keys, if you have them, in `/etc/ditta-ia-adapter.env` (mode 0600). Watch it with `journalctl -u ditta-ia-adapter -u ditta-ia-adapter-update`, and run an update by hand with `systemctl start ditta-ia-adapter-update`. If `node.endpoint` has a path, such as `https://example.com/ditta`, requests are accepted under that prefix as well as at the root, so the proxy may forward with or without it.
+Put Internet Archive keys, if you have them, in `/etc/ditta-ia-adapter.env` (mode 0600) as `IA_ACCESS_KEY_ID=...` and `IA_SECRET_ACCESS_KEY=...`. Watch it with `journalctl -u ditta-ia-adapter -u ditta-ia-adapter-update`, and run an update by hand with `systemctl start ditta-ia-adapter-update`. If `node.endpoint` has a path, such as `https://example.com/ditta`, requests are accepted under that prefix as well as at the root, so the proxy may forward with or without it.
 
 - **Configuration** lives in `config.toml`, which `.gitignore` excludes; `config.example.toml` documents every setting.
-- **Credentials.** Internet Archive keys are optional and come only from the environment: `IA_ACCESS_KEY` and `IA_SECRET_KEY`. The `internetarchive` library may also read its own `ia.ini` config file if one exists on the machine.
+- **Credentials.** Internet Archive keys are optional but recommended, since the Archive asks automated clients to authenticate when they can. They come only from the environment, under the `internetarchive` library's own names: `IA_ACCESS_KEY_ID` and `IA_SECRET_ACCESS_KEY` (the older `IA_ACCESS_KEY` and `IA_SECRET_KEY` still work). The library may also read its own `ia.ini` config file if one exists on the machine.
 - **Node key.** The node key is a file of 64 hex characters, created with mode 0600. Use a key generated for DITTA alone.
 - **State.** `terms.sqlite` and `peers.sqlite` are created next to the config file.
 
@@ -149,11 +152,13 @@ pytest
 
 The default test run never contacts the Internet Archive: the Archive client is tested against real responses recorded in `tests/fixtures/`. The wire format is tested against the spec's own test vectors (`tests/vectors/`, copied at a pinned spec commit), all 31 valid and 59 invalid.
 
-Live tests make three requests through the production throttle and are opt-in:
+Live tests make a few requests through the production throttle and are opt-in:
 
 ```sh
 DITTA_IA_LIVE=1 DITTA_IA_CONTACT_URL=https://example.com pytest tests/test_live.py
 ```
+
+An AI coding agent running them must also set `DITTA_IA_AGENT` to its model identifier (for example `DITTA_IA_AGENT=claude-opus-5-5`), which the Archive's [rules](https://archive.org/developers/bots.html) require of AI agents. It is added to the User-Agent of those requests only.
 
 ### Layout
 

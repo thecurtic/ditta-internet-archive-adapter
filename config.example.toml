@@ -15,6 +15,10 @@ port = 8080
 [archive]
 # Sent in the User-Agent so the Archive can see who runs this and reach them.
 contact_url = "https://example.com"
+# "metadata" searches titles, descriptions and subjects. "fulltext" searches
+# the text inside items; it becomes the default in 0.4.0. Searches, counts
+# and the corpus size always come from the backend chosen here.
+backend = "metadata"
 max_concurrent = 2
 # Every request to the Archive starts at least this long after the last one.
 min_request_interval_seconds = 1.0
@@ -25,6 +29,9 @@ timeout_seconds = 20
 max_results = 50
 max_query_terms = 32
 snippet_chars = 300
+# Full-text only: how many items to gather per search before picking the
+# top results. Must be at least max_results.
+candidate_pool = 100
 # Limit Archive searches to the languages announced under [corpus].
 filter_languages = true
 # Also keep items with no language field (about a third of the Archive).

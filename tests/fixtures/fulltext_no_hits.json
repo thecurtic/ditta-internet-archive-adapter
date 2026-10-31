@@ -1,0 +1,306 @@
+{
+ "version": "1x7o",
+ "request": {
+  "client_request_parameters": {
+   "client": "page_production_service_endpoint",
+   "service_backend": "fts",
+   "user_query": "!L lighthouse AND meta_mediatype:texts AND (meta_languageSorter:English OR (*:* -meta_languageSorter:*))",
+   "hits_per_page": 3,
+   "page": 1,
+   "aggregations": [],
+   "sort": [
+    "publicdate:desc"
+   ]
+  },
+  "backend_requests": {
+   "search": {
+    "root": "(self)",
+    "children": [
+     "collection_title_fetch__676af572db2969df098165709808dd07"
+    ],
+    "request_type": "search",
+    "finalized_parameters": {
+     "client": "page_production_service_endpoint",
+     "service_backend": "fts",
+     "user_query": "(redacted)",
+     "hits_per_page": 3,
+     "page": 1,
+     "aggregations": [],
+     "sort": [
+      "publicdate:desc"
+     ],
+     "page_type": "search_results",
+     "fields": [
+      "_tile_"
+     ],
+     "aggregations_size": 10,
+     "scope": "standard",
+     "feature_flags": {
+      "complex_facets": true,
+      "collection_titles": true,
+      "redact_collections": true,
+      "redact_collections_by_privs": false,
+      "redact_empty_collections": true,
+      "redact_admin_collections": true,
+      "protect_flagging_collections": true
+     }
+    }
+   },
+   "collection_title_fetch__676af572db2969df098165709808dd07": {
+    "root": "search",
+    "parent": "search",
+    "request_type": "collection_title_fetch",
+    "finalized_parameters": {
+     "page_type": "document_fetch",
+     "user_query": "(redacted)",
+     "aggregations": [],
+     "caching": null,
+     "fields": [
+      "identifier",
+      "title"
+     ],
+     "search_as_system": true,
+     "page": 1,
+     "hits_per_page": 250,
+     "sort": [
+      "_efficient_"
+     ],
+     "service_backend": "metadata",
+     "scope": "ill,printdisabled_and_music,scancenter",
+     "service": "service__metadata__load_balanced"
+    }
+   }
+  }
+ },
+ "caching": {
+  "search": {
+   "name": "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1",
+   "acceptable_names": [
+    "PPS-1x7o-J:US-RT:s~std-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "configuration": {
+    "requested": {
+     "ttl_s": 1200
+    },
+    "finalized": {
+     "bypass": false,
+     "recompute": false,
+     "no_compute": false,
+     "ttl_s": 1200,
+     "max_age_s": 0,
+     "miss_policy": "none"
+    }
+   },
+   "utilization": {
+    "went_to_cache": true,
+    "alternates_allowed": true,
+    "hit_alternate": false,
+    "hit_canonical": false,
+    "hit": false,
+    "miss": true,
+    "recomputed": true,
+    "stored": true,
+    "acceptable_names_tried": [
+     "PPS-1x7o-J:US-RT:s~std-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+    ],
+    "elapsed_s": 0.3461921215057373
+   },
+   "statsd_bucket": "search.pps.cache.fts.search_results"
+  },
+  "collection_title_fetch__676af572db2969df098165709808dd07": {
+   "name": "PPS-1x7o-J:US-RT:ctf-T:df-Q:4fd7e6c4-F:a8092e92-B:mds-RS:ill+pam+sca~CS::P:0+CS:some+BR:1",
+   "acceptable_names": [],
+   "configuration": {
+    "requested": {
+     "ttl_s": 1200
+    },
+    "finalized": {
+     "bypass": false,
+     "recompute": false,
+     "no_compute": false,
+     "ttl_s": 1200,
+     "max_age_s": 0,
+     "miss_policy": "none"
+    }
+   },
+   "utilization": {
+    "went_to_cache": true,
+    "alternates_allowed": true,
+    "hit_alternate": false,
+    "hit_canonical": true,
+    "hit": true,
+    "miss": false,
+    "recomputed": false,
+    "stored": false,
+    "elapsed_s": 0.002928018569946289
+   },
+   "statsd_bucket": "search.pps.cache.fts.search_results"
+  },
+  "summary": {
+   "fetched": [
+    "PPS-1x7o-J:US-RT:ctf-T:df-Q:4fd7e6c4-F:a8092e92-B:mds-RS:ill+pam+sca~CS::P:0+CS:some+BR:1"
+   ],
+   "computed": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "stored": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "missed": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "bypassed": []
+  }
+ },
+ "elapsed_secs": 0.3645310401916504,
+ "response": {
+  "header": {
+   "succeeded": true,
+   "query_time": 244,
+   "elapsed_secs_for_backend_requests": 0.3491201400756836
+  },
+  "body": {
+   "hits": {
+    "total": 0,
+    "returned": 0,
+    "hits": []
+   },
+   "collection_titles": {}
+  },
+  "hit_schema": {
+   "text": {
+    "identifier": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "filename": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "file_basename": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "page_num": {
+     "multivalue": false,
+     "mapping": "integer",
+     "optional": true
+    },
+    "file_creation_mtime": {
+     "multivalue": false,
+     "mapping": "integer"
+    },
+    "updated_on": {
+     "multivalue": false,
+     "mapping": "date"
+    },
+    "created_on": {
+     "multivalue": false,
+     "mapping": "date"
+    },
+    "mediatype": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "title": {
+     "multivalue": false,
+     "mapping": "string",
+     "optional": true
+    },
+    "creator": {
+     "multivalue": true,
+     "mapping": "string",
+     "optional": true
+    },
+    "date": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "publicdate": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "downloads": {
+     "multivalue": false,
+     "mapping": "integer",
+     "comment": "total views over ITEM (not text) lifetime, updated by audit consultation with Views API",
+     "optional": true
+    },
+    "reviewdate": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "collection": {
+     "multivalue": true,
+     "mapping": "string"
+    },
+    "subject": {
+     "multivalue": true,
+     "mapping": "string",
+     "dressing": {
+      "truncate": 1000
+     },
+     "optional": true
+    },
+    "year": {
+     "multivalue": false,
+     "mapping": "integer",
+     "comment": "computed from date",
+     "optional": true
+    },
+    "avg_rating": {
+     "multivalue": false,
+     "mapping": "integer",
+     "optional": true
+    },
+    "addeddate": {
+     "multivalue": false,
+     "mapping": "date",
+     "comment": "may be stale in FTS",
+     "optional": true
+    },
+    "issue": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "format varies",
+     "optional": true
+    },
+    "source": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "format varies",
+     "optional": true
+    },
+    "description": {
+     "multivalue": true,
+     "mapping": "string",
+     "dressing": {
+      "truncate": 1000
+     },
+     "comment": "legacy production overwrites metadata value with highlighted snippet",
+     "optional": true
+    },
+    "result_in_subfile": {
+     "multivalue": false,
+     "mapping": "boolean",
+     "comment": "computed in processing of FTS API hit"
+    },
+    "__href__": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "synthesized in processing of FTS API hit; TBD",
+     "optional": true
+    },
+    "lending___status": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "may be stale; sourced from MDS and appended to hits",
+     "optional": true
+    }
+   }
+  }
+ }
+}

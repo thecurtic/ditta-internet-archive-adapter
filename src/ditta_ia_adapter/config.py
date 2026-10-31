@@ -21,6 +21,9 @@ class Config:
     host: str = "127.0.0.1"
     port: int = 8080
     # Archive
+    # "metadata" searches titles, descriptions and subjects; "fulltext" the
+    # text inside items. Searches, counts and corpus size all use this one.
+    backend: str = "metadata"
     access_key: str | None = None
     secret_key: str | None = None
     max_concurrent: int = 2
@@ -31,6 +34,7 @@ class Config:
     max_results: int = 50
     max_query_terms: int = 32
     snippet_chars: int = 300
+    candidate_pool: int = 100  # full-text items fetched per search before picking the top n
     filter_languages: bool = True  # limit searches to `languages`
     include_unlabeled: bool = True  # ...but keep items with no language field
     mediatypes: list[str] = field(default_factory=lambda: ["texts"])  # [] searches all
@@ -79,8 +83,8 @@ def load(path: Path) -> Config:
         peers_db=base / discovery.get("db_path", "peers.sqlite"),
     )
     _apply(config, server, ["host", "port"])
-    _apply(config, archive, ["max_concurrent", "min_request_interval_seconds", "cache_seconds", "timeout_seconds"])
-    _apply(config, search, ["max_results", "max_query_terms", "snippet_chars", "filter_languages", "include_unlabeled", "mediatypes"])
+    _apply(config, archive, ["backend", "max_concurrent", "min_request_interval_seconds", "cache_seconds", "timeout_seconds"])
+    _apply(config, search, ["max_results", "max_query_terms", "snippet_chars", "candidate_pool", "filter_languages", "include_unlabeled", "mediatypes"])
     _apply(config, corpus, [
         "languages", "seed_terms", "count_interval_seconds",
         "refresh_after_days", "expire_after_days", "max_corpus_terms",
@@ -89,7 +93,16 @@ def load(path: Path) -> Config:
         "seed_endpoints", "reannounce_hours", "min_post_interval_seconds", "allow_private_addresses",
     ])
     _apply(config, raw.get("logging", {}), ["log_queries"])
+    _check(config)
     return config
+
+
+def _check(config: Config) -> None:
+    if config.backend not in ("fulltext", "metadata"):
+        raise ValueError('archive.backend must be "fulltext" or "metadata"')
+    # The top n come out of the pool, so a smaller pool could not fill them.
+    if config.candidate_pool < config.max_results:
+        raise ValueError("search.candidate_pool must be at least search.max_results")
 
 
 def _env(*names: str) -> str | None:

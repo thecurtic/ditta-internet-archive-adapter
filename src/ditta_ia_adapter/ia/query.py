@@ -1,8 +1,9 @@
 """Translate a DITTA query string into an Archive search expression.
 
-The query string is attacker-controlled. It is treated as a bag of terms:
+The query string is attacker-controlled. It is treated as a list of terms:
 split on whitespace, each term escaped so it can only ever match as text,
-then joined with AND (or OR on the single fallback). The raw string is
+then combined by the search ladder (a loose phrase, AND, all-but-one, OR)
+and ANDed with filters that come from configuration. The raw string is
 never passed through, so a caller cannot send field queries, wildcards,
 ranges or other expensive searches to the Archive under our name.
 """
@@ -34,9 +35,9 @@ def escape_term(term: str) -> str:
     return "".join("\\" + char if char in _SPECIAL else char for char in term)
 
 
-# How the Archive's `language` field spells a BCP-47 tag. Values are matched
-# case-blind, so "English" and "english" are one value. A tag missing here is
-# matched as written.
+# How the metadata index's `language` field spells a BCP-47 tag. Values are
+# matched case-blind, so "English" and "english" are one value. A tag missing
+# here is matched as written.
 _LANGUAGE_VALUES = {
     "en": ["eng", "english", "en"],
     "fr": ["fre", "fra", "french", "fr"],
@@ -51,24 +52,50 @@ _LANGUAGE_VALUES = {
     "ar": ["ara", "arabic", "ar"],
 }
 
+# The full-text index's `meta_languageSorter` holds one normalised name per
+# item instead. Only "English" has been checked against the live index; the
+# others follow the same pattern. A tag missing here is matched as written.
+_LANGUAGE_NAMES = {
+    "en": "English",
+    "fr": "French",
+    "de": "German",
+    "es": "Spanish",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "nl": "Dutch",
+    "ru": "Russian",
+    "ja": "Japanese",
+    "zh": "Chinese",
+    "ar": "Arabic",
+}
 
-def language_filter(tags: list[str], include_unlabeled: bool) -> str | None:
-    """A clause limiting results to items in `tags`, or None for no limit.
 
-    About a third of Archive items carry no `language` field at all (much
-    audio and video), so by default unlabelled items are kept and only items
-    labelled in some other language are left out.
+def language_codes(tags: list[str]) -> list[str]:
+    """Every spelling of these tags in the metadata index's `language` field."""
+    return [v for tag in tags for v in _LANGUAGE_VALUES.get(tag.lower(), [tag])]
+
+
+def language_names(tags: list[str]) -> list[str]:
+    """These tags as the full-text index's `meta_languageSorter` names them."""
+    return [_LANGUAGE_NAMES.get(tag.lower(), tag) for tag in tags]
+
+
+def language_filter(values: list[str], include_unlabeled: bool, field: str = "language") -> str | None:
+    """A clause limiting results to items labelled with `values`, or None.
+
+    About a third of Archive items carry no language at all (much audio and
+    video), so by default unlabelled items are kept and only items labelled
+    in some other language are left out.
     """
-    values = [v for tag in tags for v in _LANGUAGE_VALUES.get(tag.lower(), [tag])]
     if not values:
         return None
-    labelled = "language:(" + " OR ".join(escape_term(v) for v in values) + ")"
+    labelled = f"{field}:(" + " OR ".join(escape_term(v) for v in values) + ")"
     if include_unlabeled:
-        return f"({labelled} OR (*:* -language:*))"
+        return f"({labelled} OR (*:* -{field}:*))"
     return labelled
 
 
-def mediatype_filter(mediatypes: list[str]) -> str | None:
+def mediatype_filter(mediatypes: list[str], field: str = "mediatype") -> str | None:
     """A clause limiting results to these media types, or None for all.
 
     `texts` covers books, scanned pages and other documents; leaving out
@@ -76,7 +103,7 @@ def mediatype_filter(mediatypes: list[str]) -> str | None:
     """
     if not mediatypes:
         return None
-    return "mediatype:(" + " OR ".join(escape_term(m) for m in mediatypes) + ")"
+    return f"{field}:(" + " OR ".join(escape_term(m) for m in mediatypes) + ")"
 
 
 def restrict(expression: str, *clauses: str | None) -> str:
@@ -85,6 +112,16 @@ def restrict(expression: str, *clauses: str | None) -> str:
     if not clauses:
         return expression
     return " AND ".join((f"({expression})",) + clauses)
+
+
+# How far apart the phrase step lets its terms be: "gore street vancouver"~3
+# also matches "Gore Street, Vancouver" and "Vancouver's Gore Street".
+PHRASE_SLOP = 3
+
+
+def loose_phrase(terms: list[str]) -> str:
+    """The terms as one phrase, allowing a few words between or around them."""
+    return '"' + " ".join(escape_term(term) for term in terms) + f'"~{PHRASE_SLOP}'
 
 
 def all_terms(terms: list[str]) -> str:

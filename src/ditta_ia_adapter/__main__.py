@@ -60,6 +60,7 @@ def build_app(config: config_module.Config, source: Source | None = None) -> App
 
     source = source or ArchiveSource(
         contact_url=config.contact_url,
+        backend=config.backend,
         access_key=config.access_key,
         secret_key=config.secret_key,
         max_concurrent=config.max_concurrent,
@@ -68,6 +69,7 @@ def build_app(config: config_module.Config, source: Source | None = None) -> App
         timeout_seconds=config.timeout_seconds,
         max_terms=config.max_query_terms,
         snippet_chars=config.snippet_chars,
+        candidate_pool=config.candidate_pool,
         languages=config.languages if config.filter_languages else [],
         include_unlabeled=config.include_unlabeled,
         mediatypes=config.mediatypes,

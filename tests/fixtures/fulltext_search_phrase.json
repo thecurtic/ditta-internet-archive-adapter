@@ -1,0 +1,821 @@
+{
+ "version": "1x7o",
+ "request": {
+  "client_request_parameters": {
+   "client": "page_production_service_endpoint",
+   "service_backend": "fts",
+   "user_query": "!L \"gore street vancouver\"~3 AND meta_mediatype:texts AND (meta_languageSorter:English OR (*:* -meta_languageSorter:*))",
+   "hits_per_page": 20,
+   "page": 1,
+   "aggregations": []
+  },
+  "backend_requests": {
+   "search": {
+    "root": "(self)",
+    "children": [
+     "collection_title_fetch__0f32626c2cb7b312a24246ce16db03e9"
+    ],
+    "request_type": "search",
+    "finalized_parameters": {
+     "client": "page_production_service_endpoint",
+     "service_backend": "fts",
+     "user_query": "(redacted)",
+     "hits_per_page": 20,
+     "page": 1,
+     "aggregations": [],
+     "page_type": "search_results",
+     "fields": [
+      "_tile_"
+     ],
+     "sort": [
+      "_relevance_:desc",
+      "identifier"
+     ],
+     "aggregations_size": 10,
+     "scope": "standard",
+     "feature_flags": {
+      "complex_facets": true,
+      "collection_titles": true,
+      "redact_collections": true,
+      "redact_collections_by_privs": false,
+      "redact_empty_collections": true,
+      "redact_admin_collections": true,
+      "protect_flagging_collections": true
+     }
+    }
+   },
+   "collection_title_fetch__0f32626c2cb7b312a24246ce16db03e9": {
+    "root": "search",
+    "parent": "search",
+    "request_type": "collection_title_fetch",
+    "finalized_parameters": {
+     "page_type": "document_fetch",
+     "user_query": "(redacted)",
+     "aggregations": [],
+     "caching": null,
+     "fields": [
+      "identifier",
+      "title"
+     ],
+     "search_as_system": true,
+     "page": 1,
+     "hits_per_page": 250,
+     "sort": [
+      "_efficient_"
+     ],
+     "service_backend": "metadata",
+     "scope": "ill,printdisabled_and_music,scancenter",
+     "service": "service__metadata__load_balanced"
+    }
+   }
+  }
+ },
+ "caching": {
+  "search": {
+   "name": "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:00010100-H:20-B:fts-RS:sta~CS::P:0+CS:some+BR:1",
+   "acceptable_names": [
+    "PPS-1x7o-J:US-RT:s~std-T:sr-Q:00010100-H:20-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "configuration": {
+    "requested": {
+     "ttl_s": 1200
+    },
+    "finalized": {
+     "bypass": false,
+     "recompute": false,
+     "no_compute": false,
+     "ttl_s": 1200,
+     "max_age_s": 0,
+     "miss_policy": "none"
+    }
+   },
+   "utilization": {
+    "went_to_cache": true,
+    "alternates_allowed": true,
+    "hit_alternate": false,
+    "hit_canonical": false,
+    "hit": false,
+    "miss": true,
+    "recomputed": true,
+    "stored": true,
+    "acceptable_names_tried": [
+     "PPS-1x7o-J:US-RT:s~std-T:sr-Q:00010100-H:20-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+    ],
+    "elapsed_s": 0.5625529289245605
+   },
+   "statsd_bucket": "search.pps.cache.fts.search_results"
+  },
+  "collection_title_fetch__0f32626c2cb7b312a24246ce16db03e9": {
+   "name": "PPS-1x7o-J:US-RT:ctf-T:df-Q:a7b4fcc3-F:a8092e92-B:mds-RS:ill+pam+sca~CS::P:0+CS:some+BR:1",
+   "acceptable_names": [],
+   "configuration": {
+    "requested": {
+     "ttl_s": 1200
+    },
+    "finalized": {
+     "bypass": false,
+     "recompute": false,
+     "no_compute": false,
+     "ttl_s": 1200,
+     "max_age_s": 0,
+     "miss_policy": "none"
+    }
+   },
+   "utilization": {
+    "went_to_cache": true,
+    "alternates_allowed": true,
+    "hit_alternate": false,
+    "hit_canonical": false,
+    "hit": false,
+    "miss": true,
+    "recomputed": true,
+    "stored": true,
+    "elapsed_s": 0.1228940486907959
+   },
+   "statsd_bucket": "search.pps.cache.fts.search_results"
+  },
+  "summary": {
+   "fetched": [],
+   "computed": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:00010100-H:20-B:fts-RS:sta~CS::P:0+CS:some+BR:1",
+    "PPS-1x7o-J:US-RT:ctf-T:df-Q:a7b4fcc3-F:a8092e92-B:mds-RS:ill+pam+sca~CS::P:0+CS:some+BR:1"
+   ],
+   "stored": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:00010100-H:20-B:fts-RS:sta~CS::P:0+CS:some+BR:1",
+    "PPS-1x7o-J:US-RT:ctf-T:df-Q:a7b4fcc3-F:a8092e92-B:mds-RS:ill+pam+sca~CS::P:0+CS:some+BR:1"
+   ],
+   "missed": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:00010100-H:20-B:fts-RS:sta~CS::P:0+CS:some+BR:1",
+    "PPS-1x7o-J:US-RT:ctf-T:df-Q:a7b4fcc3-F:a8092e92-B:mds-RS:ill+pam+sca~CS::P:0+CS:some+BR:1"
+   ],
+   "bypassed": []
+  }
+ },
+ "elapsed_secs": 0.7028059959411621,
+ "response": {
+  "header": {
+   "succeeded": true,
+   "query_time": 190,
+   "elapsed_secs_for_backend_requests": 0.6854469776153564
+  },
+  "body": {
+   "hits": {
+    "total": 13,
+    "returned": 13,
+    "hits": [
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "governmentgazett0121gove_t0j5",
+       "filename": "governmentgazett0121gove_t0j5_hocr_searchtext.txt.gz",
+       "file_basename": "governmentgazett0121gove_t0j5",
+       "page_num": 1,
+       "file_creation_mtime": 1634632019,
+       "updated_on": "2026-03-07T18:42:14Z",
+       "created_on": "2021-10-19T08:48:59Z",
+       "mediatype": "texts",
+       "title": "Government Gazette British Columbia (January 22, 1981)",
+       "creator": [
+        "Government of British Columbia"
+       ],
+       "date": "1981-01-22T00:00:00Z",
+       "publicdate": "2021-10-18T21:29:48Z",
+       "downloads": 74,
+       "collection": [
+        "bcgazette",
+        "universityofvictorialibraries",
+        "globallibraries"
+       ],
+       "year": 1981,
+       "addeddate": "2021-10-19T08:39:15Z",
+       "result_in_subfile": false,
+       "__href__": "/details/governmentgazett0121gove_t0j5?q=%22gore+street+vancouver%22"
+      },
+      "highlight": {
+       "text": [
+        "10330—\nAlbert Lai Realty Ltd., Suite 6, 545 {{{Gore Street, Vancouver}}}, B.C. V6A 2Z6.\nAnderand Holdings Ltd.,"
+       ]
+      },
+      "_score": 18.358295
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "bwb_Y0-BUV-933",
+       "filename": "bwb_Y0-BUV-933_hocr_searchtext.txt.gz",
+       "file_basename": "bwb_Y0-BUV-933",
+       "page_num": 1,
+       "file_creation_mtime": 1759872484,
+       "updated_on": "2026-05-08T18:34:25Z",
+       "created_on": "2025-10-07T21:45:45Z",
+       "mediatype": "texts",
+       "title": "TABLE TALK",
+       "creator": [
+        "Sunny Lewis & Sidney Morozoff"
+       ],
+       "publicdate": "2025-09-29T17:29:31Z",
+       "downloads": 2,
+       "collection": [
+        "internetarchivebooks",
+        "inlibrary"
+       ],
+       "addeddate": "2026-03-30T00:20:10Z",
+       "result_in_subfile": false,
+       "__href__": "/details/bwb_Y0-BUV-933?q=%22gore+street+vancouver%22",
+       "lending___status": "available_to_browse"
+      },
+      "highlight": {
+       "text": [
+        "($$)\nNEW DIAMOND RESTAURANT 685-0727 555 {{{Gore Street, Vancouver}}}\nOpen 7 days M-F 10:30 am-9:30 pm Sat-Sun"
+       ]
+      },
+      "_score": 17.605417
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "bwb_S0-CCO-716",
+       "filename": "bwb_S0-CCO-716_hocr_searchtext.txt.gz",
+       "file_basename": "bwb_S0-CCO-716",
+       "page_num": 1,
+       "file_creation_mtime": 1750419676,
+       "updated_on": "2026-03-30T01:51:32Z",
+       "created_on": "2025-06-20T13:12:51Z",
+       "mediatype": "texts",
+       "title": "table talk",
+       "creator": [
+        "sunny lewis"
+       ],
+       "publicdate": "2025-06-19T04:27:03Z",
+       "downloads": 1,
+       "collection": [
+        "internetarchivebooks",
+        "inlibrary"
+       ],
+       "addeddate": "2026-03-29T22:48:15Z",
+       "result_in_subfile": false,
+       "__href__": "/details/bwb_S0-CCO-716?q=%22gore+street+vancouver%22",
+       "lending___status": "available_to_browse"
+      },
+      "highlight": {
+       "text": [
+        "($$)\nNEW DIAMOND RESTAURANT 685-0727 555 {{{Gore Street, Vancouver}}}\nOpen 7 days M-F 10:30 am-9:30 pm Sat-Sun"
+       ]
+      },
+      "_score": 17.605417
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "tabletalkmosiacs0000unse",
+       "filename": "tabletalkmosiacs0000unse_hocr_searchtext.txt.gz",
+       "file_basename": "tabletalkmosiacs0000unse",
+       "page_num": 1,
+       "file_creation_mtime": 1738987097,
+       "updated_on": "2026-10-17T11:33:35Z",
+       "created_on": "2025-02-08T04:11:43Z",
+       "mediatype": "texts",
+       "title": "Table Talk Mosiacs GUide to Greater Vancouver International Restaurant",
+       "creator": [
+        "SUnny Lewis and Sidney Morozoff"
+       ],
+       "date": "1983-01-01T00:00:00Z",
+       "publicdate": "2025-02-07T01:46:38Z",
+       "downloads": 2,
+       "collection": [
+        "internetarchivebooks",
+        "inlibrary"
+       ],
+       "year": 1983,
+       "addeddate": "2026-03-30T04:18:43Z",
+       "result_in_subfile": false,
+       "__href__": "/details/tabletalkmosiacs0000unse?q=%22gore+street+vancouver%22",
+       "lending___status": "available_to_browse"
+      },
+      "highlight": {
+       "text": [
+        "($$)\nNEW DIAMOND RESTAURANT 685-0727 555 {{{Gore Street, Vancouver}}}\nOpen 7 days M-F 10:30 am-9:30 pm Sat-Sun"
+       ]
+      },
+      "_score": 17.390318
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "governmentgazett0117gove_q7h0",
+       "filename": "governmentgazett0117gove_q7h0_hocr_searchtext.txt.gz",
+       "file_basename": "governmentgazett0117gove_q7h0",
+       "page_num": 1,
+       "file_creation_mtime": 1634017668,
+       "updated_on": "2026-02-27T08:30:21Z",
+       "created_on": "2021-10-12T05:57:35Z",
+       "mediatype": "texts",
+       "title": "Government Gazette British Columbia (September 29, 1977)",
+       "creator": [
+        "Government of British Columbia"
+       ],
+       "date": "1977-09-29T00:00:00Z",
+       "publicdate": "2021-10-07T17:53:48Z",
+       "downloads": 84,
+       "collection": [
+        "bcgazette",
+        "universityofvictorialibraries",
+        "globallibraries"
+       ],
+       "year": 1977,
+       "addeddate": "2021-10-12T05:56:15Z",
+       "result_in_subfile": false,
+       "__href__": "/details/governmentgazett0117gove_q7h0?q=%22gore+street+vancouver%22"
+      },
+      "highlight": {
+       "text": [
+        "County of Van- couver, Courthouse, 800 bee! {{{gore? Street, Vancouver}}}, B.C. V6C 1\nArthur William McClellan, Sa"
+       ]
+      },
+      "_score": 17.116764
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "governmentgazett91nogove_k0k0",
+       "filename": "governmentgazett91nogove_k0k0_hocr_searchtext.txt.gz",
+       "file_basename": "governmentgazett91nogove_k0k0",
+       "page_num": 1,
+       "file_creation_mtime": 1763022310,
+       "updated_on": "2025-11-13T09:31:17Z",
+       "created_on": "2025-11-13T09:31:17Z",
+       "mediatype": "texts",
+       "title": "Government Gazette British Columbia (May 31, 1951)",
+       "creator": [
+        "Government of British Columbia"
+       ],
+       "date": "1951-05-31T00:00:00Z",
+       "publicdate": "2019-11-22T23:12:17Z",
+       "downloads": 85,
+       "collection": [
+        "bcgazette",
+        "universityofvictorialibraries",
+        "globallibraries"
+       ],
+       "year": 1951,
+       "addeddate": "2019-11-22T23:12:17Z",
+       "result_in_subfile": false,
+       "__href__": "/details/governmentgazett91nogove_k0k0?q=%22gore+street+vancouver%22"
+      },
+      "highlight": {
+       "text": [
+        "address of its registered office is 337 {{{Gore Street, Vancouver}}}, B.C.\nThe objects for which the Company"
+       ]
+      },
+      "_score": 15.115201
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "governmentgazett91nogove_m6h5",
+       "filename": "governmentgazett91nogove_m6h5_hocr_searchtext.txt.gz",
+       "file_basename": "governmentgazett91nogove_m6h5",
+       "page_num": 1,
+       "file_creation_mtime": 1763017212,
+       "updated_on": "2025-11-13T07:46:09Z",
+       "created_on": "2025-11-13T07:46:09Z",
+       "mediatype": "texts",
+       "title": "Government Gazette British Columbia (June 14, 1951)",
+       "creator": [
+        "Government of British Columbia"
+       ],
+       "date": "1951-06-14T00:00:00Z",
+       "publicdate": "2019-11-22T22:58:18Z",
+       "downloads": 87,
+       "collection": [
+        "bcgazette",
+        "universityofvictorialibraries",
+        "globallibraries"
+       ],
+       "year": 1951,
+       "addeddate": "2019-11-22T22:58:18Z",
+       "result_in_subfile": false,
+       "__href__": "/details/governmentgazett91nogove_m6h5?q=%22gore+street+vancouver%22"
+      },
+      "highlight": {
+       "text": [
+        "address of its registered office is 337 {{{Gore Street, Vancouver}}}, B.C.\nThe objects for which the Company"
+       ]
+      },
+      "_score": 15.105523
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "governmentgazett91nogove_c4t5",
+       "filename": "governmentgazett91nogove_c4t5_hocr_searchtext.txt.gz",
+       "file_basename": "governmentgazett91nogove_c4t5",
+       "page_num": 1,
+       "file_creation_mtime": 1763017394,
+       "updated_on": "2025-11-13T08:00:06Z",
+       "created_on": "2025-11-13T08:00:06Z",
+       "mediatype": "texts",
+       "title": "Government Gazette British Columbia (June 07, 1951)",
+       "creator": [
+        "Government of British Columbia"
+       ],
+       "date": "1951-06-07T00:00:00Z",
+       "publicdate": "2019-11-22T23:46:31Z",
+       "downloads": 267,
+       "collection": [
+        "bcgazette",
+        "universityofvictorialibraries",
+        "globallibraries"
+       ],
+       "year": 1951,
+       "addeddate": "2019-11-22T23:46:31Z",
+       "result_in_subfile": false,
+       "__href__": "/details/governmentgazett91nogove_c4t5?q=%22gore+street+vancouver%22"
+      },
+      "highlight": {
+       "text": [
+        "address of its registered office is 337 {{{Gore Street, Vancouver}}}, B.C.\nThe objects for which the Company"
+       ]
+      },
+      "_score": 14.876619
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "governmentgazett91nogove_y6q1",
+       "filename": "governmentgazett91nogove_y6q1_hocr_searchtext.txt.gz",
+       "file_basename": "governmentgazett91nogove_y6q1",
+       "page_num": 1,
+       "file_creation_mtime": 1763018604,
+       "updated_on": "2025-11-13T08:00:26Z",
+       "created_on": "2025-11-13T08:00:26Z",
+       "mediatype": "texts",
+       "title": "Government Gazette British Columbia (May 25, 1951)",
+       "creator": [
+        "Government of British Columbia"
+       ],
+       "date": "1951-05-25T00:00:00Z",
+       "publicdate": "2019-11-22T22:30:40Z",
+       "downloads": 94,
+       "collection": [
+        "bcgazette",
+        "universityofvictorialibraries",
+        "globallibraries"
+       ],
+       "year": 1951,
+       "addeddate": "2019-11-22T22:30:40Z",
+       "result_in_subfile": false,
+       "__href__": "/details/governmentgazett91nogove_y6q1?q=%22gore+street+vancouver%22"
+      },
+      "highlight": {
+       "text": [
+        "address of its registered office is 337 {{{Gore Street, Vancouver}}}, B.C.\nThe objects for which the Company"
+       ]
+      },
+      "_score": 14.873161
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "vancouversmanyfa0000grif",
+       "filename": "vancouversmanyfa0000grif_hocr_searchtext.txt.gz",
+       "file_basename": "vancouversmanyfa0000grif",
+       "page_num": 1,
+       "file_creation_mtime": 1638817293,
+       "updated_on": "2026-03-13T23:47:18Z",
+       "created_on": "2021-12-06T19:39:53Z",
+       "mediatype": "texts",
+       "title": "Vancouver's many faces : passport to the cultures of a city",
+       "creator": [
+        "Griffin, Kevin"
+       ],
+       "date": "1993-01-01T00:00:00Z",
+       "publicdate": "2021-12-01T02:05:21Z",
+       "downloads": 16,
+       "collection": [
+        "internetarchivebooks",
+        "inlibrary"
+       ],
+       "subject": [
+        "Multiculturalism -- British Columbia -- Vancouver",
+        "Multiculturalisme -- Colombie-Britannique -- Vancouver",
+        "Ethnologie -- Colombie-Britannique -- Vancouver",
+        "Multiculturalism",
+        "Vancouver (B.C.) -- Population -- Ethnic groups",
+        "British Columbia -- Vancouver"
+       ],
+       "year": 1993,
+       "addeddate": "2021-12-08T22:10:23Z",
+       "description": [
+        "ix, 265 pages, [16] pages of plates : 23 cm",
+        "Includes bibliographical references and index"
+       ],
+       "result_in_subfile": false,
+       "__href__": "/details/vancouversmanyfa0000grif?q=%22gore+street+vancouver%22",
+       "lending___status": "available_to_browse"
+      },
+      "highlight": {
+       "text": [
+        "and language training. Located at 2-545 {{{Gore Street, Vancouver}}}, V6A 2E6. Phone: 683-2866.\nVietnamese Workers"
+       ]
+      },
+      "_score": 14.283376
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "discovercanada00bail",
+       "filename": "discovercanada00bail_hocr_searchtext.txt.gz",
+       "file_basename": "discovercanada00bail",
+       "page_num": 1,
+       "file_creation_mtime": 1659861967,
+       "updated_on": "2025-08-21T03:00:08Z",
+       "created_on": "2022-08-07T08:52:51Z",
+       "mediatype": "texts",
+       "title": "Discover Canada",
+       "creator": [
+        "Bailey, Eric"
+       ],
+       "date": "1995-01-01T00:00:00Z",
+       "publicdate": "2019-02-14T16:43:18Z",
+       "downloads": 32,
+       "collection": [
+        "internetarchivebooks",
+        "inlibrary"
+       ],
+       "subject": [
+        "Canada -- Guidebooks",
+        "Canada"
+       ],
+       "year": 1995,
+       "addeddate": "2019-02-14T16:43:14Z",
+       "description": [
+        "351 pages : 23 cm",
+        "Includes index",
+        "Newfoundland and Labrador"
+       ],
+       "result_in_subfile": false,
+       "__href__": "/details/discovercanada00bail?q=%22gore+street+vancouver%22",
+       "lending___status": "available_to_browse"
+      },
+      "highlight": {
+       "text": [
+        "covers  an  area from  Carrall  Street  to  {{{Gore  Street.\nVANCOUVER}}}\nDOWNTOWN\nVANCOUVER\nLost\nLagoon\nBurrard"
+       ]
+      },
+      "_score": 12.102477
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "exportcanada8081unse",
+       "filename": "exportcanada8081unse_hocr_searchtext.txt.gz",
+       "file_basename": "exportcanada8081unse",
+       "page_num": 1,
+       "file_creation_mtime": 1636639462,
+       "updated_on": "2025-08-22T23:18:52Z",
+       "created_on": "2021-11-16T00:37:10Z",
+       "mediatype": "texts",
+       "title": "Export Canada",
+       "date": "1978-01-01T00:00:00Z",
+       "publicdate": "2019-07-05T18:23:54Z",
+       "downloads": 37,
+       "collection": [
+        "trent_university",
+        "internetarchivebooks",
+        "inlibrary"
+       ],
+       "subject": [
+        "Export marketing -- Directories",
+        "Canada -- Commerce -- Directories"
+       ],
+       "year": 1978,
+       "addeddate": "2019-07-05T18:23:37Z",
+       "description": [
+        "v. 29 cm"
+       ],
+       "result_in_subfile": false,
+       "__href__": "/details/exportcanada8081unse?q=%22gore+street+vancouver%22",
+       "lending___status": "available_to_browse"
+      },
+      "highlight": {
+       "text": [
+        "spec  sheets,  annual  reports.\nFoot  of  {{{Gore  Street Vancouver}}},  B.  C.  V6A  2Y7 Phone  (604)681-0211"
+       ]
+      },
+      "_score": 6.928611
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "caughtinactantho0000unse",
+       "filename": "caughtinactantho0000unse_hocr_searchtext.txt.gz",
+       "file_basename": "caughtinactantho0000unse",
+       "page_num": 1,
+       "file_creation_mtime": 1681540652,
+       "updated_on": "2025-07-21T22:27:42Z",
+       "created_on": "2023-04-18T00:29:46Z",
+       "mediatype": "texts",
+       "title": "Caught in the act : an anthology of performance art by Canadian women",
+       "date": "2004-01-01T00:00:00Z",
+       "publicdate": "2023-03-28T15:44:28Z",
+       "downloads": 41,
+       "collection": [
+        "internetarchivebooks",
+        "inlibrary"
+       ],
+       "subject": [
+        "Performance art -- Canada -- History -- 20th century",
+        "Women artists -- Canada"
+       ],
+       "year": 2004,
+       "addeddate": "2023-04-15T08:11:04Z",
+       "description": [
+        "428 p., [16] p. of plates : 23 cm",
+        "Includes bibliographical references (p. 414-422)"
+       ],
+       "result_in_subfile": false,
+       "__href__": "/details/caughtinactantho0000unse?q=%22gore+street+vancouver%22",
+       "lending___status": "available_to_browse"
+      },
+      "highlight": {
+       "text": [
+        "BELMORE Vigil, at the corner of {{{Gore Street}}} and Cordova {{{Street, Vancouver}}}, 2002\nREBECCA BELMORE Vigil, at",
+        "at the corner of\n{{{Gore Street}}} and Cordova {{{Street, Vancouver}}}, 2002\n125\n126\nMother), she travelled across"
+       ]
+      },
+      "_score": 6.3926125
+     }
+    ]
+   },
+   "collection_titles": {
+    "universityofvictorialibraries": "University of Victoria Libraries Collection",
+    "trent_university": "Trent University Library Donation",
+    "bcgazette": "Official Gazettes of the Province of British Columbia",
+    "globallibraries": "Global Libraries",
+    "internetarchivebooks": "Internet Archive Books"
+   }
+  },
+  "hit_schema": {
+   "text": {
+    "identifier": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "filename": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "file_basename": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "page_num": {
+     "multivalue": false,
+     "mapping": "integer",
+     "optional": true
+    },
+    "file_creation_mtime": {
+     "multivalue": false,
+     "mapping": "integer"
+    },
+    "updated_on": {
+     "multivalue": false,
+     "mapping": "date"
+    },
+    "created_on": {
+     "multivalue": false,
+     "mapping": "date"
+    },
+    "mediatype": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "title": {
+     "multivalue": false,
+     "mapping": "string",
+     "optional": true
+    },
+    "creator": {
+     "multivalue": true,
+     "mapping": "string",
+     "optional": true
+    },
+    "date": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "publicdate": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "downloads": {
+     "multivalue": false,
+     "mapping": "integer",
+     "comment": "total views over ITEM (not text) lifetime, updated by audit consultation with Views API",
+     "optional": true
+    },
+    "reviewdate": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "collection": {
+     "multivalue": true,
+     "mapping": "string"
+    },
+    "subject": {
+     "multivalue": true,
+     "mapping": "string",
+     "dressing": {
+      "truncate": 1000
+     },
+     "optional": true
+    },
+    "year": {
+     "multivalue": false,
+     "mapping": "integer",
+     "comment": "computed from date",
+     "optional": true
+    },
+    "avg_rating": {
+     "multivalue": false,
+     "mapping": "integer",
+     "optional": true
+    },
+    "addeddate": {
+     "multivalue": false,
+     "mapping": "date",
+     "comment": "may be stale in FTS",
+     "optional": true
+    },
+    "issue": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "format varies",
+     "optional": true
+    },
+    "source": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "format varies",
+     "optional": true
+    },
+    "description": {
+     "multivalue": true,
+     "mapping": "string",
+     "dressing": {
+      "truncate": 1000
+     },
+     "comment": "legacy production overwrites metadata value with highlighted snippet",
+     "optional": true
+    },
+    "result_in_subfile": {
+     "multivalue": false,
+     "mapping": "boolean",
+     "comment": "computed in processing of FTS API hit"
+    },
+    "__href__": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "synthesized in processing of FTS API hit; TBD",
+     "optional": true
+    },
+    "lending___status": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "may be stale; sourced from MDS and appended to hits",
+     "optional": true
+    }
+   }
+  }
+ }
+}

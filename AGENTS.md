@@ -90,7 +90,7 @@ Hits are per text file. Hits from the same item are merged into one candidate th
 | Document identifier | `identifier` |
 | URL | `https://archive.org/details/{identifier}`, always built, never taken from metadata |
 | Title | `title`, first value if an array, identifier if missing |
-| Snippet | Full-text: the best-scoring highlight passage, `{{{ }}}` match markers removed. Otherwise, and for the metadata backend: `description`, first value if an array (the full-text index sometimes sends the array as a string), HTML stripped, whitespace collapsed, truncated. If there is none, a line from creator, year, media type and subjects |
+| Snippet | Full-text: the best-scoring highlight passage, `{{{ }}}` match markers removed. Otherwise, and for the metadata backend: `description`, first value if an array, HTML stripped, whitespace collapsed, truncated. If there is none, a line from creator, year, media type and subjects |
 
 Each item appears at most once in a result set.
 

@@ -1,0 +1,435 @@
+{
+ "version": "1x7o",
+ "request": {
+  "client_request_parameters": {
+   "client": "page_production_service_endpoint",
+   "service_backend": "fts",
+   "user_query": "!L lighthouse AND meta_mediatype:texts AND (meta_languageSorter:English OR (*:* -meta_languageSorter:*))",
+   "hits_per_page": 3,
+   "page": 1,
+   "aggregations": [],
+   "sort": [
+    "publicdate:desc"
+   ]
+  },
+  "backend_requests": {
+   "search": {
+    "root": "(self)",
+    "children": [
+     "collection_title_fetch__676af572db2969df098165709808dd07"
+    ],
+    "request_type": "search",
+    "finalized_parameters": {
+     "client": "page_production_service_endpoint",
+     "service_backend": "fts",
+     "user_query": "(redacted)",
+     "hits_per_page": 3,
+     "page": 1,
+     "aggregations": [],
+     "sort": [
+      "publicdate:desc"
+     ],
+     "page_type": "search_results",
+     "fields": [
+      "_tile_"
+     ],
+     "aggregations_size": 10,
+     "scope": "standard",
+     "feature_flags": {
+      "complex_facets": true,
+      "collection_titles": true,
+      "redact_collections": true,
+      "redact_collections_by_privs": false,
+      "redact_empty_collections": true,
+      "redact_admin_collections": true,
+      "protect_flagging_collections": true
+     }
+    }
+   },
+   "collection_title_fetch__676af572db2969df098165709808dd07": {
+    "root": "search",
+    "parent": "search",
+    "request_type": "collection_title_fetch",
+    "finalized_parameters": {
+     "page_type": "document_fetch",
+     "user_query": "(redacted)",
+     "aggregations": [],
+     "caching": null,
+     "fields": [
+      "identifier",
+      "title"
+     ],
+     "search_as_system": true,
+     "page": 1,
+     "hits_per_page": 250,
+     "sort": [
+      "_efficient_"
+     ],
+     "service_backend": "metadata",
+     "scope": "ill,printdisabled_and_music,scancenter",
+     "service": "service__metadata__load_balanced"
+    }
+   }
+  }
+ },
+ "caching": {
+  "search": {
+   "name": "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1",
+   "acceptable_names": [
+    "PPS-1x7o-J:US-RT:s~std-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "configuration": {
+    "requested": {
+     "ttl_s": 1200
+    },
+    "finalized": {
+     "bypass": false,
+     "recompute": false,
+     "no_compute": false,
+     "ttl_s": 1200,
+     "max_age_s": 0,
+     "miss_policy": "none"
+    }
+   },
+   "utilization": {
+    "went_to_cache": true,
+    "alternates_allowed": true,
+    "hit_alternate": false,
+    "hit_canonical": false,
+    "hit": false,
+    "miss": true,
+    "recomputed": true,
+    "stored": true,
+    "acceptable_names_tried": [
+     "PPS-1x7o-J:US-RT:s~std-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+    ],
+    "elapsed_s": 0.3461921215057373
+   },
+   "statsd_bucket": "search.pps.cache.fts.search_results"
+  },
+  "collection_title_fetch__676af572db2969df098165709808dd07": {
+   "name": "PPS-1x7o-J:US-RT:ctf-T:df-Q:4fd7e6c4-F:a8092e92-B:mds-RS:ill+pam+sca~CS::P:0+CS:some+BR:1",
+   "acceptable_names": [],
+   "configuration": {
+    "requested": {
+     "ttl_s": 1200
+    },
+    "finalized": {
+     "bypass": false,
+     "recompute": false,
+     "no_compute": false,
+     "ttl_s": 1200,
+     "max_age_s": 0,
+     "miss_policy": "none"
+    }
+   },
+   "utilization": {
+    "went_to_cache": true,
+    "alternates_allowed": true,
+    "hit_alternate": false,
+    "hit_canonical": true,
+    "hit": true,
+    "miss": false,
+    "recomputed": false,
+    "stored": false,
+    "elapsed_s": 0.002928018569946289
+   },
+   "statsd_bucket": "search.pps.cache.fts.search_results"
+  },
+  "summary": {
+   "fetched": [
+    "PPS-1x7o-J:US-RT:ctf-T:df-Q:4fd7e6c4-F:a8092e92-B:mds-RS:ill+pam+sca~CS::P:0+CS:some+BR:1"
+   ],
+   "computed": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "stored": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "missed": [
+    "PPS-1x7o-J:US-RT:s~hit-T:sr-Q:f2ff0842-H:3-S:9c468d37-B:fts-RS:sta~CS::P:0+CS:some+BR:1"
+   ],
+   "bypassed": []
+  }
+ },
+ "elapsed_secs": 0.3645310401916504,
+ "response": {
+  "header": {
+   "succeeded": true,
+   "query_time": 244,
+   "elapsed_secs_for_backend_requests": 0.3491201400756836
+  },
+  "body": {
+   "hits": {
+    "total": 970504,
+    "returned": 3,
+    "hits": [
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "1-monet-jackie-wullschlager-2023",
+       "filename": "1Monet -- Jackie Wullschlager -- 2023_hocr_searchtext.txt.gz",
+       "file_basename": "1Monet -- Jackie Wullschlager -- 2023",
+       "page_num": 0,
+       "file_creation_mtime": 1793409338,
+       "updated_on": "2026-10-31T02:02:51Z",
+       "created_on": "2026-10-31T02:02:51Z",
+       "mediatype": "texts",
+       "title": "Two Books on Impressionists",
+       "creator": [
+        "Jackie Wullschläger; Jeffrey Meyers"
+       ],
+       "publicdate": "2026-10-30T21:24:27Z",
+       "downloads": 0,
+       "collection": [
+        "opensource"
+       ],
+       "subject": [
+        "Impressionists"
+       ],
+       "addeddate": "2026-10-30T21:24:27Z",
+       "description": [
+        "In the course of a long and exceptionally creative life, Claude Monet revolutionized painting and made some of the most iconic images in western art. Misunderstood and mocked at the beginning of his career, he risked everything to pursue his original vision. Although close to starvation when he invented impressionism on the banks of the Seine in the 1860s-70s, in the following decades he emerged as the powerful leader of the new painting in Paris at one of its most exciting cultural moments. His symphonic series Haystacks , Poplars , and Rouen Cathedral brought wealth and renown. Then he withdrew to paint only the pond in his garden. The late Water Lilies , ignored during his lifetime, are now celebrated as pioneers of twentieth century modernism. Behind this great and famous artist is a volatile, voracious, nervous yet reckless man, largely unknown. Jackie Wullschläger's enthralling biography, based on thousands of never-before translated letters and unpublished sources, is the first..."
+       ],
+       "result_in_subfile": true,
+       "__href__": "/details/1-monet-jackie-wullschlager-2023/1Monet%20--%20Jackie%20Wullschlager%20--%202023?q=lighthouse"
+      },
+      "highlight": {
+       "text": [
+        "within a stable structure, is more theatrical. The {{{lighthouse}}} is a vertical anchor in a flow of horizontals"
+       ]
+      },
+      "_score": 2.8004832
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "stranger-in-the-shoguns-city-amy-stanley-2020",
+       "filename": "Stranger in the Shogun's City -- Amy Stanley -- 2020_hocr_searchtext.txt.gz",
+       "file_basename": "Stranger in the Shogun's City -- Amy Stanley -- 2020",
+       "page_num": 0,
+       "file_creation_mtime": 1793402307,
+       "updated_on": "2026-10-31T00:48:12Z",
+       "created_on": "2026-10-31T00:48:12Z",
+       "mediatype": "texts",
+       "title": "Two Books on Edo",
+       "creator": [
+        "Timon Screech; Amy Stanley"
+       ],
+       "publicdate": "2026-10-30T21:01:51Z",
+       "downloads": 0,
+       "collection": [
+        "opensource"
+       ],
+       "subject": [
+        "Edo in the 19th Century"
+       ],
+       "addeddate": "2026-10-30T21:01:51Z",
+       "description": [
+        "Tokyo today is one of the world's mega-cities and the center of a scintillating, hyper-modern culture--but not everyone is aware of its past. Founded in 1590 as the seat of the warlord Tokugawa family, Tokyo, then called Edo, was the locus of Japanese trade, economics, and urban civilization until 1868, when it mutated into Tokyo and became Japan's modern capital. This beautifully illustrated book presents important sites and features from the rich history of Edo, taken from contemporary sources such as diaries, guidebooks, and woodblock prints. These include the huge bridge on which the city was centered; the vast castle of the Shogun; sumptuous Buddhist temples, bars, kabuki theaters, and Yoshiwara--the famous red-light district."
+       ],
+       "result_in_subfile": true,
+       "__href__": "/details/stranger-in-the-shoguns-city-amy-stanley-2020/Stranger%20in%20the%20Shogun%27s%20City%20--%20Amy%20Stanley%20--%202020?q=lighthouse"
+      },
+      "highlight": {
+       "text": [
+        "order (Perry wanted to make a report to the U.S. {{{Lighthouse}}} Board—they could learn a thing or two). It was",
+        "urination, 126–27 used-clothing markets, 146 U.S. {{{Lighthouse}}} Board, 227\nWar of 1812, 199, 223 Warring States"
+       ]
+      },
+      "_score": 5.129027
+     },
+     {
+      "index": "fts_main_v2",
+      "service_backend": "fts",
+      "hit_type": "text",
+      "fields": {
+       "identifier": "montauk-air-force-station-from-radar-to-reuse",
+       "filename": "Montauk Air Force Station From Radar to Reuse_hocr_searchtext.txt.gz",
+       "file_basename": "Montauk Air Force Station From Radar to Reuse",
+       "page_num": 0,
+       "file_creation_mtime": 1793397575,
+       "updated_on": "2026-10-30T22:53:19Z",
+       "created_on": "2026-10-30T22:53:19Z",
+       "mediatype": "texts",
+       "title": "Montauk Air Force Station From Radar To Reuse",
+       "creator": [
+        "General Services Administration"
+       ],
+       "date": "1981-01-01T00:00:00Z",
+       "publicdate": "2026-10-30T20:59:11Z",
+       "downloads": 0,
+       "collection": [
+        "opensource"
+       ],
+       "subject": [
+        "Community Planning",
+        "Montauk (N.Y.)",
+        "Development"
+       ],
+       "year": 1981,
+       "addeddate": "2026-10-30T20:59:11Z",
+       "description": [
+        "The plan was developed by Columbia University in cooperation with the local community and the General Services Administration (GSA). The report and the recommendations are based on a thorough study of the Montauk Air Force Station site and its surroundings in light of community needs for housing, education, open space and economic development. "
+       ],
+       "result_in_subfile": true,
+       "__href__": "/details/montauk-air-force-station-from-radar-to-reuse/Montauk%20Air%20Force%20Station%20From%20Radar%20to%20Reuse?q=lighthouse"
+      },
+      "highlight": {
+       "text": [
+        "Montauk is at Turtle Hill where the Montauk Point {{{Lighthouse}}}, puilt in 1795, is located. It is operated by",
+        "From Hither Hills; to Montauk State Park and the {{{Lighthouse}}}, the traveller has a choice of the two-lane wide",
+        "the 1920's identified with Carl G. Fisher. The {{{Lighthouse}}} is about 5 1/2 miles from these downtown reference",
+        "BAY\n= = = =\nAbout a mile before reaching the {{{Lighthouse}}}, approximately 4 1/2 miles from town, and\n106",
+        "George\nWashington authorized the construction of a {{{lighthouse}}} on Montauk Point at Turtle Hill, a site chosen"
+       ]
+      },
+      "_score": 8.102158
+     }
+    ]
+   },
+   "collection_titles": {
+    "opensource": "Community Texts"
+   }
+  },
+  "hit_schema": {
+   "text": {
+    "identifier": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "filename": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "file_basename": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "page_num": {
+     "multivalue": false,
+     "mapping": "integer",
+     "optional": true
+    },
+    "file_creation_mtime": {
+     "multivalue": false,
+     "mapping": "integer"
+    },
+    "updated_on": {
+     "multivalue": false,
+     "mapping": "date"
+    },
+    "created_on": {
+     "multivalue": false,
+     "mapping": "date"
+    },
+    "mediatype": {
+     "multivalue": false,
+     "mapping": "string"
+    },
+    "title": {
+     "multivalue": false,
+     "mapping": "string",
+     "optional": true
+    },
+    "creator": {
+     "multivalue": true,
+     "mapping": "string",
+     "optional": true
+    },
+    "date": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "publicdate": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "downloads": {
+     "multivalue": false,
+     "mapping": "integer",
+     "comment": "total views over ITEM (not text) lifetime, updated by audit consultation with Views API",
+     "optional": true
+    },
+    "reviewdate": {
+     "multivalue": false,
+     "mapping": "date",
+     "optional": true
+    },
+    "collection": {
+     "multivalue": true,
+     "mapping": "string"
+    },
+    "subject": {
+     "multivalue": true,
+     "mapping": "string",
+     "dressing": {
+      "truncate": 1000
+     },
+     "optional": true
+    },
+    "year": {
+     "multivalue": false,
+     "mapping": "integer",
+     "comment": "computed from date",
+     "optional": true
+    },
+    "avg_rating": {
+     "multivalue": false,
+     "mapping": "integer",
+     "optional": true
+    },
+    "addeddate": {
+     "multivalue": false,
+     "mapping": "date",
+     "comment": "may be stale in FTS",
+     "optional": true
+    },
+    "issue": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "format varies",
+     "optional": true
+    },
+    "source": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "format varies",
+     "optional": true
+    },
+    "description": {
+     "multivalue": true,
+     "mapping": "string",
+     "dressing": {
+      "truncate": 1000
+     },
+     "comment": "legacy production overwrites metadata value with highlighted snippet",
+     "optional": true
+    },
+    "result_in_subfile": {
+     "multivalue": false,
+     "mapping": "boolean",
+     "comment": "computed in processing of FTS API hit"
+    },
+    "__href__": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "synthesized in processing of FTS API hit; TBD",
+     "optional": true
+    },
+    "lending___status": {
+     "multivalue": false,
+     "mapping": "string",
+     "comment": "may be stale; sourced from MDS and appended to hits",
+     "optional": true
+    }
+   }
+  }
+ }
+}

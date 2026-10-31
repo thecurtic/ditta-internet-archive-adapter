@@ -1,4 +1,4 @@
-"""Map Archive search documents to DITTA results.
+"""Map Archive search documents and full-text hits to results.
 
 Every string from the Archive is untrusted display content: markup is
 stripped and never evaluated, and the URL is built from the identifier
@@ -6,10 +6,12 @@ rather than taken from metadata.
 """
 
 import re
+from datetime import datetime, timezone
 from html.parser import HTMLParser
 from urllib.parse import quote
 
 from ..adapter import Result
+from ..rerank import Candidate
 
 DETAILS_URL = "https://archive.org/details/"
 # Everything a result needs, fetched in the one search request. The last
@@ -21,6 +23,8 @@ _WHITESPACE = re.compile(r"\s+")
 _CONTROLS = re.compile(r"[\x00-\x08\x0b\x0e-\x1f\x7f-\x9f]")
 # Some items carry `subject` as one string that looks like a Python list.
 _QUOTED = re.compile(r"'([^']*)'|\"([^\"]*)\"")
+# The full-text index marks matches in its passages {{{like this}}}.
+_MATCH_MARKERS = re.compile(r"\{\{\{|\}\}\}")
 
 
 def to_result(doc: dict, snippet_chars: int) -> Result | None:
@@ -44,6 +48,55 @@ def to_result(doc: dict, snippet_chars: int) -> Result | None:
         title=title,
         snippet=snippet,
     )
+
+
+def hit_to_candidate(hit: dict, source_rank: int, step: str) -> Candidate | None:
+    """A Candidate for one full-text hit, or None if it is not worth returning.
+
+    The same rule as to_result: an identifier, and some snippet text, here
+    a matching passage or failing that the description or metadata line.
+    """
+    fields = hit.get("fields")
+    if not isinstance(fields, dict):
+        return None
+    identifier = _first(fields.get("identifier"))
+    if not identifier:
+        return None
+    passages = [p for p in (_clean_passage(text) for text in _highlights(hit)) if p]
+    fallback = clean_text(_first(fields.get("description"))) or _metadata_line(fields)
+    if not passages and not fallback:
+        return None
+    return Candidate(
+        id=identifier,
+        url=DETAILS_URL + quote(identifier, safe=""),
+        title=clean_text(_first(fields.get("title"))) or identifier,
+        passages=passages,
+        fallback_snippet=fallback,
+        source_rank=source_rank,
+        step=step,
+    )
+
+
+def _highlights(hit: dict) -> list[str]:
+    highlight = hit.get("highlight")
+    texts = highlight.get("text") if isinstance(highlight, dict) else None
+    return [text for text in texts if isinstance(text, str)] if isinstance(texts, list) else []
+
+
+def _clean_passage(text: str) -> str:
+    return clean_text(_MATCH_MARKERS.sub("", text))
+
+
+def unix_time(value: object) -> int:
+    """Archive dates look like 2019-03-05T12:00:00Z; 0 when unusable."""
+    value = _first(value)
+    try:
+        when = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return 0
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return max(0, int(when.timestamp()))
 
 
 def clean_text(value: str) -> str:

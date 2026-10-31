@@ -1,4 +1,4 @@
-"""The Archive client against recorded-shape fixtures; no network."""
+"""The Archive client (metadata backend and shared politeness) against recorded fixtures; no network."""
 
 from datetime import datetime, timezone
 
@@ -324,7 +324,7 @@ def test_requests_start_at_least_min_interval_apart() -> None:
 
 def test_production_default_spaces_requests_one_second_apart() -> None:
     source = ArchiveSource("https://example.com", session=FakeSession())
-    assert source._throttle._min_interval == 1.0
+    assert source._http.throttle._min_interval == 1.0
 
 
 def test_concurrency_cap_refuses_when_slots_are_taken() -> None:
@@ -355,7 +355,7 @@ def test_user_agent_names_the_tool_version_and_contact_but_no_model() -> None:
     source = ArchiveSource("https://example.com")
     expected = f"ditta-ia-adapter/{__version__} (+https://example.com)"
     assert source.user_agent_suffix == expected
-    user_agent = source._session.headers["User-Agent"]
+    user_agent = source._http.session.headers["User-Agent"]
     assert user_agent.endswith(expected)
     assert "claude" not in user_agent.lower()
 

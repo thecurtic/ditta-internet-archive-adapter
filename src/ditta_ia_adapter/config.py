@@ -21,9 +21,10 @@ class Config:
     host: str = "127.0.0.1"
     port: int = 8080
     # Archive
-    # "metadata" searches titles, descriptions and subjects; "fulltext" the
-    # text inside items. Searches, counts and corpus size all use this one.
-    backend: str = "metadata"
+    # "fulltext" searches the text inside items; "metadata" (the fallback)
+    # titles, descriptions and subjects. Searches, counts and corpus size
+    # all use this one.
+    backend: str = "fulltext"
     access_key: str | None = None
     secret_key: str | None = None
     max_concurrent: int = 2

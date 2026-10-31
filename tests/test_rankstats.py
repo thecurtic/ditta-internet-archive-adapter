@@ -129,7 +129,7 @@ def test_metadata_backend_records_nothing() -> None:
     calls = []
     body = {"response": {"numFound": 1, "docs": [{"identifier": "a", "description": "d"}]}}
     source = ArchiveSource(
-        "https://example.com", session=FakeSession(FakeResponse(body=body)), min_interval_seconds=0,
+        "https://example.com", backend="metadata", session=FakeSession(FakeResponse(body=body)), min_interval_seconds=0,
         record_ranks=lambda *args: calls.append(args),
     )
     source.search("gore", 2)

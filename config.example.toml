@@ -15,10 +15,12 @@ port = 8080
 [archive]
 # Sent in the User-Agent so the Archive can see who runs this and reach them.
 contact_url = "https://example.com"
-# "metadata" searches titles, descriptions and subjects. "fulltext" searches
-# the text inside items; it becomes the default in 0.4.0. Searches, counts
-# and the corpus size always come from the backend chosen here.
-backend = "metadata"
+# "fulltext" searches the text inside items. "metadata" searches only
+# titles, descriptions and subjects; keep it as the fallback for when
+# full-text search is unavailable. Searches, counts and the corpus size
+# always come from the backend chosen here, and changing it (or any search
+# filter) makes the adapter recount its statistics.
+backend = "fulltext"
 max_concurrent = 2
 # Every request to the Archive starts at least this long after the last one.
 min_request_interval_seconds = 1.0

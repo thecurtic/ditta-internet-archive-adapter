@@ -16,7 +16,7 @@ BACKENDS = ("fulltext", "metadata")
 # Named like the class it replaced, so callers construct it the same way.
 def ArchiveSource(
     contact_url: str,
-    backend: str = "metadata",
+    backend: str = "fulltext",
     access_key: str | None = None,
     secret_key: str | None = None,
     max_concurrent: int = 2,

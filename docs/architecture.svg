@@ -44,14 +44,14 @@
 
   <rect class="box" x="24" y="296" width="460" height="72" rx="8"/>
   <text class="ink" x="254" y="320" text-anchor="middle" font-weight="600">Internet Archive client</text>
-  <text class="quiet" x="254" y="336" text-anchor="middle" font-size="11.5">Query translation, rate limit, backoff, cache</text>
-  <text class="quiet" x="254" y="352" text-anchor="middle" font-size="11.5">Requests via the internetarchive library</text>
+  <text class="quiet" x="254" y="336" text-anchor="middle" font-size="11.5">Full-text (default) or metadata backend</text>
+  <text class="quiet" x="254" y="352" text-anchor="middle" font-size="11.5">Ladder, over-fetch, rate limit, backoff, cache</text>
 
   <rect class="box" x="532" y="296" width="204" height="72" rx="8"/>
   <text class="ink" x="634" y="320" text-anchor="middle" font-weight="600">Term store</text>
   <text class="quiet" x="634" y="336" text-anchor="middle" font-size="11.5">SQLite term counts</text>
   <text class="quiet" x="634" y="352" text-anchor="middle" font-size="11.5">Background count worker</text>
 
-  <rect class="box" x="154" y="392" width="200" height="40" rx="8"/>
-  <text class="ink" x="254" y="416" text-anchor="middle">Internet Archive search</text>
+  <rect class="box" x="124" y="392" width="260" height="40" rx="8"/>
+  <text class="ink" x="254" y="416" text-anchor="middle">Internet Archive full-text search</text>
 </svg>

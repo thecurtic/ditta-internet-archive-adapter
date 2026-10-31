@@ -38,3 +38,8 @@ and `forensics` (the account) blocks were removed before saving.
 The service's failure response has not been seen live, so
 `fulltext_failed.json` follows only the header shape the recorded responses
 share.
+
+The opt-in live test (`tests/test_live.py`) checked on 2026-10-31 that the
+filters as the adapter sends them, `meta_mediatype:(texts)` and
+`meta_languageSorter:(English)` in brackets, give the same totals (970,507
+for `lighthouse`, 36,736,966 for `*:*`), and that a 100-hit page is accepted.

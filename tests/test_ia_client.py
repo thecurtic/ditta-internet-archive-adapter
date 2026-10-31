@@ -17,6 +17,7 @@ from ditta_ia_adapter.ia.throttle import Throttle, TTLCache, parse_retry_after
 def make_source(*responses, **kwargs) -> tuple[ArchiveSource, FakeSession]:
     session = FakeSession(*responses)
     kwargs.setdefault("min_interval_seconds", 0)  # spacing has its own test
+    kwargs.setdefault("backend", "metadata")
     source = ArchiveSource("https://example.com", session=session, **kwargs)
     return source, session
 

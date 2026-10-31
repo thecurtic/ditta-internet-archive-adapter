@@ -284,8 +284,8 @@ def test_no_filters_configured_sends_the_bare_expression() -> None:
 
 
 def test_backend_selects_the_source() -> None:
-    assert isinstance(ArchiveSource("https://example.com", backend="fulltext", session=FakeSession()), FullTextSource)
-    assert isinstance(ArchiveSource("https://example.com", session=FakeSession()), MetadataSource)
+    assert isinstance(ArchiveSource("https://example.com", session=FakeSession()), FullTextSource)
+    assert isinstance(ArchiveSource("https://example.com", backend="metadata", session=FakeSession()), MetadataSource)
     with pytest.raises(ValueError):
         ArchiveSource("https://example.com", backend="both", session=FakeSession())
 
@@ -303,7 +303,7 @@ def test_config_reads_backend_and_pool(tmp_path) -> None:
     loaded = write_config(tmp_path, 'backend = "fulltext"', "candidate_pool = 200")
     assert (loaded.backend, loaded.candidate_pool) == ("fulltext", 200)
     defaults = write_config(tmp_path)
-    assert (defaults.backend, defaults.candidate_pool) == ("metadata", 100)
+    assert (defaults.backend, defaults.candidate_pool) == ("fulltext", 100)
 
 
 @pytest.mark.parametrize(

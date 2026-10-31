@@ -70,7 +70,7 @@ def test_counts_scope_changes_with_backend_and_filters_only(tmp_path) -> None:
     assert counts_scope(scoped(tmp_path, port=9, max_results=10, candidate_pool=300)) == base
     assert counts_scope(scoped(tmp_path, languages=["EN"])) == base  # tags are case-blind
     for change in (
-        {"backend": "fulltext"},
+        {"backend": "metadata"},
         {"languages": ["fr"]},
         {"filter_languages": False},
         {"include_unlabeled": False},
@@ -96,7 +96,7 @@ def test_switching_backend_restarts_the_announced_statistics(tmp_path) -> None:
     assert same.node.announcement()["corpus"]["term_count"] == 1
     same.stop()
 
-    switched = build_app(scoped(tmp_path, backend="fulltext", **settings), source=FakeSource())
+    switched = build_app(scoped(tmp_path, backend="metadata", **settings), source=FakeSource())
     corpus = switched.node.announcement()["corpus"]
     assert (corpus["document_count"], corpus["term_count"], corpus["updated"]) == (0, 0, 0)
     switched.worker.step()

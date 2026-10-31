@@ -151,12 +151,17 @@ def test_identical_searches_are_cached() -> None:
 # --- result mapping -----------------------------------------------------------
 
 
-def test_recorded_hits_are_mapped_in_archive_order_with_a_passage_snippet() -> None:
+def test_recorded_hits_are_reranked_and_mapped_with_a_passage_snippet() -> None:
     source, _ = make_source(FakeResponse(body=fixture("fulltext_search_phrase.json")), candidate_pool=13)
     results = source.search("gore street vancouver", 13)
 
     assert len(results) == 13
-    first = results[0]
+    ids = [r.id for r in results]
+    # Exact phrase plus "Vancouver" in the title first, the Archive's order
+    # among equals, and "Gore Street and Cordova Street, Vancouver" last.
+    assert ids[:3] == ["tabletalkmosiacs0000unse", "vancouversmanyfa0000grif", "governmentgazett0121gove_t0j5"]
+    assert ids[-1] == "caughtinactantho0000unse"
+    first = results[2]
     assert first.id == "governmentgazett0121gove_t0j5"
     assert first.url == "https://archive.org/details/governmentgazett0121gove_t0j5"
     assert first.title == "Government Gazette British Columbia (January 22, 1981)"

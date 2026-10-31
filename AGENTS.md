@@ -74,12 +74,12 @@ Hits are per text file. Hits from the same item are merged into one candidate th
 
 ### Reranking
 
-- The weights are fixed and named in code, not in configuration. Changing them is a code change with a test.
-- Features:
-  - the share of query terms found in the title and passages
-  - query terms adjacent and in order
-  - a title match
-  - the source's rank, used only as a tie-break
+- Candidates are ordered by three keys in turn:
+  1. Coverage: the share of query terms found in the title and passages, never less than the share the source guarantees for the ladder step that found the item.
+  2. Closeness: query terms adjacent and in order, plus a title match, weighted.
+  3. The source's rank, used only as a tie-break.
+- Coverage is a key of its own, not a weight, so an item missing a term never outranks one holding them all, however long the query.
+- The closeness weights are fixed and named in code, not in configuration. Changing them is a code change with a test.
 - Matching is exact after lowercasing, with no stemming, so "lighthouses" does not match "lighthouse". This is a known limit.
 - The reranker sees only the passages the Archive highlights, a few per hit, not the whole text. The Archive's own match covers the full text, so the reranker reorders whole-text matches using excerpts.
 

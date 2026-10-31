@@ -10,11 +10,12 @@ A search over-fetches: it fills a pool of up to `candidate_pool` items by
 walking the ladder (loose phrase, AND, all-but-one, OR), one page per step,
 and stops once the pool is full. Hits are per text file, so one item can
 appear several times; its hits merge into one candidate that keeps its first
-(best) position and all its passages. The top n of the pool are returned.
+(best) position and all its passages. The reranker then orders the pool and
+the top n are returned.
 """
 
 from ..adapter import Result, SourceBusy, SourceError, TermStats
-from ..rerank import Candidate
+from ..rerank import Candidate, Ranked, rerank
 from . import query as q
 from .http import ArchiveHttp
 from .mapping import hit_to_candidate, truncate, unix_time
@@ -61,7 +62,7 @@ class FullTextSource:
             return cached
 
         pool, complete = self._fill_pool(terms)
-        results = [self._to_result(candidate) for candidate in pool[:n]]
+        results = [self._to_result(ranked) for ranked in rerank(terms, pool)[:n]]
         if complete:
             self._cache.put(("search", tuple(terms), n), results)
         return results
@@ -74,7 +75,7 @@ class FullTextSource:
         so asking for fewer would leave the pool short.
         """
         pool: dict[str, Candidate] = {}
-        for step, expression in _ladder(terms):
+        for step, expression, coverage in _ladder(terms):
             if len(pool) >= self._pool_size:
                 break
             try:
@@ -86,27 +87,29 @@ class FullTextSource:
                     raise
                 return list(pool.values()), False
             for hit in hits:
-                self._add(pool, hit, step)
+                self._add(pool, hit, step, coverage)
         return list(pool.values()), True
 
-    def _add(self, pool: dict[str, Candidate], hit: dict, step: str) -> None:
+    def _add(self, pool: dict[str, Candidate], hit: dict, step: str, coverage: float) -> None:
         candidate = hit_to_candidate(hit, source_rank=len(pool), step=step)
         if candidate is None:
             return
+        candidate.min_coverage = coverage
         known = pool.get(candidate.id)
         if known is not None:
             # Another file of the same item, or the same file found again by
-            # a looser step: keep the first position, gather new passages.
+            # a looser step: keep the first position (and with it the first,
+            # strictest step's coverage), gather new passages.
             known.passages += [p for p in candidate.passages if p not in known.passages]
         elif len(pool) < self._pool_size:
             pool[candidate.id] = candidate
 
-    def _to_result(self, candidate: Candidate) -> Result:
+    def _to_result(self, ranked: Ranked) -> Result:
         return Result(
-            id=candidate.id,
-            url=candidate.url,
-            title=candidate.title,
-            snippet=truncate(candidate.snippet, self._snippet_chars),
+            id=ranked.candidate.id,
+            url=ranked.candidate.url,
+            title=ranked.candidate.title,
+            snippet=truncate(ranked.snippet, self._snippet_chars),
         )
 
     def count(self, term: str) -> TermStats:
@@ -146,17 +149,23 @@ class FullTextSource:
         return found, total
 
 
-def _ladder(terms: list[str]) -> list[tuple[str, str]]:
-    """(step name, expression) pairs, strictest first, pointless steps left out."""
-    if len(terms) == 1:
-        return [("and", q.all_terms(terms))]
+def _ladder(terms: list[str]) -> list[tuple[str, str, float]]:
+    """(step name, expression, coverage) triples, strictest first.
+
+    Coverage is the share of the terms every hit of that step is known to
+    hold in its full text, which its highlighted passages may not show. The
+    reranker takes it as a floor. Pointless steps are left out.
+    """
+    k = len(terms)
+    if k == 1:
+        return [("and", q.all_terms(terms), 1.0)]
     steps = [
-        ("phrase", q.loose_phrase(terms)),
-        ("and", q.all_terms(terms)),
-        ("all_but_one", q.all_but_one(terms)),
-        ("or", q.any_term(terms)),
+        ("phrase", q.loose_phrase(terms), 1.0),
+        ("and", q.all_terms(terms), 1.0),
+        ("all_but_one", q.all_but_one(terms), (k - 1) / k),
+        ("or", q.any_term(terms), 1 / k),
     ]
-    return [(name, expression) for name, expression in steps if expression]
+    return [step for step in steps if step[1]]
 
 
 def _fields(hit: dict) -> dict:

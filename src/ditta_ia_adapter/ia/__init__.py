@@ -1,10 +1,13 @@
 """The Internet Archive client: every Archive-specific rule lives here."""
 
+from collections.abc import Callable
+
 from internetarchive import ArchiveSession
 
 from .fulltext import FullTextSource
 from .http import ArchiveHttp
 from .metadata import MetadataSource
+from ..rerank import Ranked
 from .throttle import Throttle
 
 BACKENDS = ("fulltext", "metadata")
@@ -29,10 +32,13 @@ def ArchiveSource(
     mediatypes: list[str] | None = None,
     session: ArchiveSession | None = None,
     throttle: Throttle | None = None,
+    record_ranks: Callable[[list[Ranked], int, bool], None] | None = None,
 ) -> FullTextSource | MetadataSource:
     """The Archive source for `backend`, sharing one politeness layer.
 
     `agent` names the AI model driving the client (see ArchiveHttp).
+    `record_ranks` receives each full-text search's served results; the
+    metadata backend has no pool, so it records nothing.
     """
     if backend not in BACKENDS:
         raise ValueError(f"unknown archive backend {backend!r}; use one of {', '.join(BACKENDS)}")
@@ -56,7 +62,7 @@ def ArchiveSource(
         mediatypes=mediatypes,
     )
     if backend == "fulltext":
-        return FullTextSource(http, candidate_pool=candidate_pool, **shared)
+        return FullTextSource(http, candidate_pool=candidate_pool, record_ranks=record_ranks, **shared)
     return MetadataSource(http, **shared)
 
 

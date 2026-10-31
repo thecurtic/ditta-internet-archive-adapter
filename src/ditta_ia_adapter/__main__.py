@@ -1,4 +1,5 @@
-"""Command line: `keygen` makes a node key, `serve` runs the adapter."""
+"""Command line: `keygen` makes a node key, `serve` runs the adapter,
+`rank-report` prints the rank stats."""
 
 import argparse
 import logging
@@ -12,6 +13,7 @@ from .front import AnnouncementStore, Gossip, Node, make_server
 from .front.node import NodeSettings
 from .adapter import Source
 from .ia import ArchiveSource
+from .rankstats import RankStats, build_report
 from .terms import CountWorker, TermStore
 from .wire import NodeKey
 
@@ -23,6 +25,9 @@ def main(argv: list[str] | None = None) -> int:
     keygen.add_argument("path", type=Path)
     serve = commands.add_parser("serve", help="run the adapter")
     serve.add_argument("--config", type=Path, default=Path("config.toml"))
+    report = commands.add_parser("rank-report", help="print where served results sat in the Archive's order")
+    report.add_argument("--config", type=Path, default=Path("config.toml"))
+    report.add_argument("--days", type=int, default=30, help="how many days back to report (default 30)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -31,7 +36,21 @@ def main(argv: list[str] | None = None) -> int:
         key.save(args.path)
         print(key.pubkey)
         return 0
+    if args.command == "rank-report":
+        return rank_report(config_module.load(args.config), args.days)
     return serve_forever(config_module.load(args.config))
+
+
+def rank_report(config: config_module.Config, days: int) -> int:
+    if not config.stats_db.exists():
+        print(f"No rank stats yet: {config.stats_db} does not exist.")
+        return 0
+    stats = RankStats(str(config.stats_db), read_only=True)
+    try:
+        print(build_report(stats, max(1, days)))
+    finally:
+        stats.close()
+    return 0
 
 
 @dataclass
@@ -58,22 +77,26 @@ def build_app(config: config_module.Config, source: Source | None = None) -> App
     key = NodeKey.load(config.key_file)
     user_agent = f"{TOOL_NAME}/{__version__} (+{config.contact_url})"
 
-    source = source or ArchiveSource(
-        contact_url=config.contact_url,
-        backend=config.backend,
-        access_key=config.access_key,
-        secret_key=config.secret_key,
-        max_concurrent=config.max_concurrent,
-        min_interval_seconds=config.min_request_interval_seconds,
-        cache_seconds=config.cache_seconds,
-        timeout_seconds=config.timeout_seconds,
-        max_terms=config.max_query_terms,
-        snippet_chars=config.snippet_chars,
-        candidate_pool=config.candidate_pool,
-        languages=config.languages if config.filter_languages else [],
-        include_unlabeled=config.include_unlabeled,
-        mediatypes=config.mediatypes,
-    )
+    if source is None:
+        # Only the full-text backend has a pool to measure.
+        stats = RankStats(str(config.stats_db), keep_days=config.stats_keep_days) if config.backend == "fulltext" else None
+        source = ArchiveSource(
+            contact_url=config.contact_url,
+            backend=config.backend,
+            access_key=config.access_key,
+            secret_key=config.secret_key,
+            max_concurrent=config.max_concurrent,
+            min_interval_seconds=config.min_request_interval_seconds,
+            cache_seconds=config.cache_seconds,
+            timeout_seconds=config.timeout_seconds,
+            max_terms=config.max_query_terms,
+            snippet_chars=config.snippet_chars,
+            candidate_pool=config.candidate_pool,
+            languages=config.languages if config.filter_languages else [],
+            include_unlabeled=config.include_unlabeled,
+            mediatypes=config.mediatypes,
+            record_ranks=stats.record if stats else None,
+        )
     terms = TermStore(str(config.terms_db))
     terms.note_terms(config.seed_terms)
     peers = AnnouncementStore(str(config.peers_db))

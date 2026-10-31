@@ -11,8 +11,12 @@ walking the ladder (loose phrase, AND, all-but-one, OR), one page per step,
 and stops once the pool is full. Hits are per text file, so one item can
 appear several times; its hits merge into one candidate that keeps its first
 (best) position and all its passages. The reranker then orders the pool and
-the top n are returned.
+the top n are returned. If given a `record_ranks` callback (the rank stats
+store), each uncached search reports where its served results sat in the
+pool, so an operator can see whether the pool is big enough.
 """
+
+from collections.abc import Callable
 
 from ..adapter import Result, SourceBusy, SourceError, TermStats
 from ..rerank import Candidate, Ranked, rerank
@@ -42,8 +46,10 @@ class FullTextSource:
         languages: list[str] | None = None,
         include_unlabeled: bool = True,
         mediatypes: list[str] | None = None,
+        record_ranks: Callable[[list[Ranked], int, bool], None] | None = None,
     ) -> None:
         self._http = http
+        self._record_ranks = record_ranks
         self.user_agent_suffix = http.user_agent_suffix
         self._cache = TTLCache(cache_seconds)
         self._max_terms = max_terms
@@ -62,7 +68,11 @@ class FullTextSource:
             return cached
 
         pool, complete = self._fill_pool(terms)
-        results = [self._to_result(ranked) for ranked in rerank(terms, pool)[:n]]
+        served = rerank(terms, pool)[:n]
+        if self._record_ranks:
+            # Below the cache, so a cached answer is never counted twice.
+            self._record_ranks(served, self._pool_size, len(pool) >= self._pool_size)
+        results = [self._to_result(ranked) for ranked in served]
         if complete:
             self._cache.put(("search", tuple(terms), n), results)
         return results

@@ -46,6 +46,9 @@ class Config:
     refresh_after_days: int = 7
     expire_after_days: int = 90
     max_corpus_terms: int = 5000
+    # Rank stats
+    stats_db: Path = Path("stats.sqlite")
+    stats_keep_days: int = 90
     # Discovery
     peers_db: Path = Path("peers.sqlite")
     seed_endpoints: list[str] = field(default_factory=list)
@@ -81,6 +84,7 @@ def load(path: Path) -> Config:
         secret_key=_env("IA_SECRET_ACCESS_KEY", "IA_SECRET_KEY"),
         terms_db=base / corpus.get("db_path", "terms.sqlite"),
         peers_db=base / discovery.get("db_path", "peers.sqlite"),
+        stats_db=base / raw.get("stats", {}).get("db_path", "stats.sqlite"),
     )
     _apply(config, server, ["host", "port"])
     _apply(config, archive, ["backend", "max_concurrent", "min_request_interval_seconds", "cache_seconds", "timeout_seconds"])
@@ -92,6 +96,8 @@ def load(path: Path) -> Config:
     _apply(config, discovery, [
         "seed_endpoints", "reannounce_hours", "min_post_interval_seconds", "allow_private_addresses",
     ])
+    if "keep_days" in raw.get("stats", {}):
+        config.stats_keep_days = raw["stats"]["keep_days"]
     _apply(config, raw.get("logging", {}), ["log_queries"])
     _check(config)
     return config
@@ -103,6 +109,11 @@ def _check(config: Config) -> None:
     # The top n come out of the pool, so a smaller pool could not fill them.
     if config.candidate_pool < config.max_results:
         raise ValueError("search.candidate_pool must be at least search.max_results")
+    # Separate files are what keeps rank stats from ever being joined to terms.
+    if config.stats_db.resolve() in (config.terms_db.resolve(), config.peers_db.resolve()):
+        raise ValueError("stats.db_path must be its own file, not the term or peer store")
+    if config.stats_keep_days < 1:
+        raise ValueError("stats.keep_days must be at least 1")
 
 
 def _env(*names: str) -> str | None:

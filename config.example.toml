@@ -51,6 +51,13 @@ refresh_after_days = 7
 expire_after_days = 90
 max_corpus_terms = 5000
 
+[stats]
+# Full-text only: counters showing whether candidate_pool is big enough,
+# printed by `ditta-ia-adapter rank-report`. Counters only, by day: never
+# queries, terms, query times or requesters, and never the term store's file.
+db_path = "stats.sqlite"
+keep_days = 90
+
 [discovery]
 db_path = "peers.sqlite"
 # Base URLs of nodes to announce to at startup.

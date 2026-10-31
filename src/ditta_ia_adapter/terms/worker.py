@@ -17,6 +17,28 @@ log = logging.getLogger(__name__)
 CORPUS_UPDATED = "corpus_updated"  # end of the last completed refresh pass
 DOCUMENT_COUNT = "document_count"
 DOCUMENT_COUNT_AT = "document_count_at"
+# A fingerprint of what the counts describe: which index, which filters.
+COUNTS_SCOPE = "counts_scope"
+
+
+def reset_if_scope_changed(store: TermStore, scope: int) -> bool:
+    """Start the statistics again if they were counted under another scope.
+
+    Counts from another index, or with other filters, describe a different
+    corpus, and serving them beside fresh ones would mix the two. So every
+    count and the corpus size are dropped (the terms stay queued) and the
+    worker recounts them. A store with no scope yet, from before 0.4.0, is
+    reset once, since nothing says what its counts were made under. The
+    scope is stored last, so an interrupted reset runs again next start.
+    """
+    if store.get_meta(COUNTS_SCOPE) == scope:
+        return False
+    log.info("statistics reset: the archive backend or filters changed; recounting every term")
+    store.clear_counts()
+    for key in (DOCUMENT_COUNT, DOCUMENT_COUNT_AT, CORPUS_UPDATED):
+        store.set_meta(key, 0)
+    store.set_meta(COUNTS_SCOPE, scope)
+    return True
 
 
 class CountWorker:

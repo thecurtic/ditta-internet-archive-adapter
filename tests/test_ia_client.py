@@ -424,3 +424,18 @@ def test_no_languages_means_no_filter() -> None:
     source, session = make_source(FakeResponse(body=fixture("search_two_terms.json")))
     source.search("lighthouse", 8)
     assert session.calls[0]["params"]["q"] == "lighthouse"
+
+
+def test_metadata_search_count_and_corpus_size_use_the_same_filters() -> None:
+    source, session = make_source(
+        FakeResponse(body=fixture("search_no_hits.json")),
+        FakeResponse(body=fixture("count_lighthouse.json")),
+        FakeResponse(body=fixture("total_all.json")),
+        languages=["en"],
+        mediatypes=["texts"],
+    )
+    source.search("lighthouse", 8)
+    source.count("lighthouse")
+    source.total_documents()
+    suffix = ") AND mediatype:(texts) AND (language:(eng OR english OR en) OR (*:* -language:*))"
+    assert all(call["params"]["q"].endswith(suffix) for call in session.calls)

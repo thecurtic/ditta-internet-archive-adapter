@@ -2,6 +2,8 @@
 `rank-report` prints the rank stats."""
 
 import argparse
+import hashlib
+import json
 import logging
 import sys
 from dataclasses import dataclass
@@ -14,7 +16,7 @@ from .front.node import NodeSettings
 from .adapter import Source
 from .ia import ArchiveSource
 from .rankstats import RankStats, build_report
-from .terms import CountWorker, TermStore
+from .terms import CountWorker, TermStore, reset_if_scope_changed
 from .wire import NodeKey
 
 
@@ -98,6 +100,7 @@ def build_app(config: config_module.Config, source: Source | None = None) -> App
             record_ranks=stats.record if stats else None,
         )
     terms = TermStore(str(config.terms_db))
+    reset_if_scope_changed(terms, counts_scope(config))
     terms.note_terms(config.seed_terms)
     peers = AnnouncementStore(str(config.peers_db))
 
@@ -137,6 +140,23 @@ def build_app(config: config_module.Config, source: Source | None = None) -> App
 
     server = make_server(node, config.host, config.port, config.path_prefix)
     return App(server, worker, gossip, node)
+
+
+def counts_scope(config: config_module.Config) -> int:
+    """A fingerprint of the corpus the term counts describe.
+
+    Changing the backend or any search filter changes it, which makes the
+    term store start its statistics again (see reset_if_scope_changed).
+    """
+    described = {
+        "backend": config.backend,
+        "languages": sorted(lang.lower() for lang in config.languages) if config.filter_languages else [],
+        "include_unlabeled": config.include_unlabeled,
+        "mediatypes": sorted(config.mediatypes),
+    }
+    digest = hashlib.sha256(json.dumps(described, sort_keys=True).encode()).digest()
+    # 7 bytes fit SQLite's signed integer; never 0, which means "no scope yet".
+    return int.from_bytes(digest[:7], "big") or 1
 
 
 def serve_forever(config: config_module.Config) -> int:

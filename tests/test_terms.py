@@ -85,3 +85,27 @@ def test_worker_waits_out_a_backoff(tmp_path) -> None:
 
     worker = CountWorker(make_store(tmp_path), Busy(), interval_seconds=5)
     assert worker.step() == 90
+
+
+# --- statistics scope -----------------------------------------------------------
+
+
+def test_a_new_scope_drops_counts_and_corpus_size_but_keeps_terms(tmp_path) -> None:
+    from ditta_ia_adapter.terms import reset_if_scope_changed
+    from ditta_ia_adapter.terms.worker import COUNTS_SCOPE, DOCUMENT_COUNT_AT
+
+    store = make_store(tmp_path, [100 * DAY])
+    assert reset_if_scope_changed(store, 11)  # no scope yet: a store from before 0.4.0
+    store.note_terms(["lighthouse"])
+    store.record("lighthouse", TermStats(15772, 1))
+    for key, value in ((DOCUMENT_COUNT, 128351232), (DOCUMENT_COUNT_AT, 99 * DAY), (CORPUS_UPDATED, 99 * DAY)):
+        store.set_meta(key, value)
+
+    assert not reset_if_scope_changed(store, 11)
+    assert store.counted_term_count() == 1
+
+    assert reset_if_scope_changed(store, 22)
+    assert store.counted_term_count() == 0
+    assert store.next_to_count(refresh_after=7 * DAY) == "lighthouse"  # still queued
+    assert [store.get_meta(k) for k in (DOCUMENT_COUNT, DOCUMENT_COUNT_AT, CORPUS_UPDATED)] == [0, 0, 0]
+    assert store.get_meta(COUNTS_SCOPE) == 22

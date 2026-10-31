@@ -313,3 +313,16 @@ def test_config_reads_backend_and_pool(tmp_path) -> None:
 def test_config_rejects_unknown_backend_and_too_small_pool(tmp_path, archive: str, search: str) -> None:
     with pytest.raises(ValueError):
         write_config(tmp_path, archive, search)
+
+
+def test_search_count_and_corpus_size_use_the_same_filters() -> None:
+    source, session = make_source(
+        FakeResponse(body=fixture("fulltext_no_hits.json")),
+        FakeResponse(body=fixture("fulltext_count_lighthouse.json")),
+        FakeResponse(body=fixture("fulltext_total_texts.json")),
+    )
+    source.search("lighthouse", 8)
+    source.count("lighthouse")
+    source.total_documents()
+    assert {call["url"] for call in session.calls} == {"https://archive.org/services/search/beta/page_production/"}
+    assert all(query.endswith(f") AND {FILTERS}") for query in queries(session))

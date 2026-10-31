@@ -91,6 +91,11 @@ class TermStore:
                 (stats.document_count, stats.newest, int(self._clock()), term),
             )
 
+    def clear_counts(self) -> None:
+        """Forget every count but keep the terms, so each is counted again."""
+        with self._lock, self._db:
+            self._db.execute("UPDATE terms SET document_count = NULL, newest = NULL, counted_at = NULL")
+
     def expire(self, unused_for: int) -> int:
         """Drop terms nobody has requested for `unused_for` seconds."""
         cutoff = int(self._clock()) - unused_for
